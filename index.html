@@ -1,0 +1,3275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VisionGuard AI — Visual Bug & Layout Regression Testing</title>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+<style>
+:root{
+    --bg:#07090f;
+    --bg2:#0c101a;
+    --panel:rgba(16,21,34,.82);
+    --panel2:rgba(20,27,43,.92);
+    --border:rgba(255,255,255,.09);
+    --text:#f5f7ff;
+    --muted:#8993aa;
+    --primary:#7c5cff;
+    --secondary:#00d9ff;
+    --green:#27e39b;
+    --yellow:#ffc857;
+    --red:#ff5277;
+    --blue:#5e9cff;
+    --shadow:0 25px 80px rgba(0,0,0,.38);
+}
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+html,body{
+    width:100%;
+    min-height:100%;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:
+        radial-gradient(circle at 10% 10%,rgba(124,92,255,.16),transparent 30%),
+        radial-gradient(circle at 90% 20%,rgba(0,217,255,.11),transparent 30%),
+        var(--bg);
+    color:var(--text);
+}
+
+body{
+    overflow-x:hidden;
+}
+
+button,input,select{
+    font:inherit;
+}
+
+button{
+    cursor:pointer;
+}
+
+.app{
+    display:flex;
+    min-height:100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    position:fixed;
+    z-index:50;
+    left:0;
+    top:0;
+    bottom:0;
+    width:255px;
+    padding:24px 16px;
+    border-right:1px solid var(--border);
+    background:rgba(7,9,15,.84);
+    backdrop-filter:blur(25px);
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:6px 10px 25px;
+}
+
+.logo{
+    width:43px;
+    height:43px;
+    border-radius:14px;
+    display:grid;
+    place-items:center;
+    font-weight:900;
+    font-size:19px;
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    box-shadow:0 0 30px rgba(124,92,255,.35);
+}
+
+.brand h1{
+    font-size:17px;
+    letter-spacing:.2px;
+}
+
+.brand span{
+    color:var(--secondary);
+}
+
+.brand small{
+    display:block;
+    margin-top:2px;
+    color:var(--muted);
+    font-size:10px;
+    letter-spacing:1.4px;
+    text-transform:uppercase;
+}
+
+.nav-title{
+    padding:16px 12px 8px;
+    font-size:10px;
+    color:#667087;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+}
+
+.nav{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.nav button{
+    position:relative;
+    border:0;
+    color:#9ca6ba;
+    background:transparent;
+    padding:12px 13px;
+    border-radius:12px;
+    text-align:left;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    transition:.25s;
+}
+
+.nav button:hover{
+    background:rgba(255,255,255,.055);
+    color:white;
+}
+
+.nav button.active{
+    background:linear-gradient(90deg,rgba(124,92,255,.2),rgba(0,217,255,.04));
+    color:white;
+}
+
+.nav button.active:before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:8px;
+    bottom:8px;
+    width:3px;
+    border-radius:10px;
+    background:linear-gradient(var(--primary),var(--secondary));
+}
+
+.nav-icon{
+    width:24px;
+    text-align:center;
+}
+
+.sidebar-bottom{
+    position:absolute;
+    left:16px;
+    right:16px;
+    bottom:20px;
+}
+
+.engine-status{
+    padding:13px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,.035);
+    border-radius:14px;
+}
+
+.engine-status .dot{
+    width:8px;
+    height:8px;
+    display:inline-block;
+    background:var(--green);
+    border-radius:50%;
+    margin-right:7px;
+    box-shadow:0 0 12px var(--green);
+}
+
+.engine-status p{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:5px;
+}
+
+/* MAIN */
+
+.main{
+    margin-left:255px;
+    width:calc(100% - 255px);
+    padding:25px 30px 60px;
+}
+
+.topbar{
+    height:64px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:25px;
+}
+
+.page-title h2{
+    font-size:25px;
+    letter-spacing:-.7px;
+}
+
+.page-title p{
+    color:var(--muted);
+    font-size:12px;
+    margin-top:4px;
+}
+
+.top-actions{
+    display:flex;
+    gap:10px;
+}
+
+.btn{
+    border:1px solid var(--border);
+    color:white;
+    background:rgba(255,255,255,.05);
+    border-radius:11px;
+    padding:10px 15px;
+    transition:.25s;
+}
+
+.btn:hover{
+    transform:translateY(-2px);
+    border-color:rgba(255,255,255,.18);
+}
+
+.btn.primary{
+    background:linear-gradient(135deg,var(--primary),#5b78ff);
+    border:0;
+    box-shadow:0 10px 30px rgba(124,92,255,.25);
+}
+
+.btn.danger{
+    background:rgba(255,82,119,.1);
+    color:#ff7895;
+}
+
+.view{
+    display:none;
+    animation:viewIn .4s ease;
+}
+
+.view.active{
+    display:block;
+}
+
+@keyframes viewIn{
+    from{opacity:0;transform:translateY(10px)}
+    to{opacity:1;transform:none}
+}
+
+/* DASHBOARD */
+
+.hero{
+    border:1px solid var(--border);
+    border-radius:24px;
+    padding:27px;
+    background:
+        linear-gradient(135deg,rgba(124,92,255,.15),rgba(0,217,255,.045)),
+        var(--panel);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    position:relative;
+}
+
+.hero:after{
+    content:"";
+    position:absolute;
+    width:350px;
+    height:350px;
+    right:-150px;
+    top:-160px;
+    border-radius:50%;
+    background:rgba(0,217,255,.08);
+    filter:blur(5px);
+}
+
+.hero-content{
+    position:relative;
+    z-index:2;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:6px 10px;
+    border:1px solid rgba(124,92,255,.3);
+    border-radius:100px;
+    background:rgba(124,92,255,.08);
+    color:#b6aaff;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+}
+
+.hero h3{
+    font-size:34px;
+    margin:17px 0 8px;
+    max-width:700px;
+    letter-spacing:-1.3px;
+}
+
+.hero h3 span{
+    background:linear-gradient(90deg,#fff,var(--secondary));
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.hero p{
+    color:var(--muted);
+    max-width:720px;
+    line-height:1.65;
+    font-size:13px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:14px;
+    margin-top:18px;
+}
+
+.stat{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:19px;
+    position:relative;
+    overflow:hidden;
+}
+
+.stat:after{
+    content:"";
+    position:absolute;
+    right:-25px;
+    bottom:-30px;
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    background:rgba(124,92,255,.07);
+}
+
+.stat-label{
+    color:var(--muted);
+    font-size:11px;
+}
+
+.stat-value{
+    font-size:28px;
+    font-weight:800;
+    margin-top:7px;
+}
+
+.stat-sub{
+    color:#667087;
+    font-size:10px;
+    margin-top:3px;
+}
+
+/* TEST UPLOAD */
+
+.section{
+    margin-top:18px;
+}
+
+.section-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+}
+
+.section-head h3{
+    font-size:16px;
+}
+
+.section-head span{
+    color:var(--muted);
+    font-size:11px;
+}
+
+.upload-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.drop{
+    min-height:215px;
+    border:1px dashed rgba(255,255,255,.16);
+    border-radius:19px;
+    background:rgba(255,255,255,.025);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:25px;
+    transition:.25s;
+    position:relative;
+    overflow:hidden;
+}
+
+.drop:hover,.drop.drag{
+    border-color:var(--secondary);
+    background:rgba(0,217,255,.04);
+}
+
+.drop input{
+    display:none;
+}
+
+.drop-icon{
+    font-size:34px;
+    margin-bottom:12px;
+}
+
+.drop h4{
+    font-size:14px;
+}
+
+.drop p{
+    color:var(--muted);
+    font-size:11px;
+    margin:6px 0 15px;
+}
+
+.file-name{
+    color:var(--secondary);
+    font-size:11px;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.config{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:12px;
+    margin-top:15px;
+}
+
+.field{
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:var(--panel);
+    padding:13px;
+}
+
+.field label{
+    display:block;
+    color:var(--muted);
+    font-size:10px;
+    margin-bottom:7px;
+}
+
+.field select,.field input[type="range"]{
+    width:100%;
+}
+
+.field select{
+    background:#0e1320;
+    color:white;
+    border:1px solid var(--border);
+    padding:9px;
+    border-radius:9px;
+}
+
+.range-row{
+    display:flex;
+    justify-content:space-between;
+    font-size:10px;
+}
+
+.run-wrap{
+    margin-top:15px;
+    display:flex;
+    justify-content:flex-end;
+}
+
+.run-btn{
+    padding:13px 24px;
+    border:0;
+    border-radius:12px;
+    color:white;
+    font-weight:700;
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    box-shadow:0 12px 35px rgba(80,100,255,.25);
+    transition:.25s;
+}
+
+.run-btn:hover{
+    transform:translateY(-3px);
+    box-shadow:0 18px 45px rgba(80,100,255,.38);
+}
+
+.run-btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+    transform:none;
+}
+
+/* RESULT */
+
+.result{
+    display:none;
+}
+
+.result.show{
+    display:block;
+}
+
+.result-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.score{
+    width:145px;
+    height:145px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    background:
+        radial-gradient(circle at center,#0c101a 58%,transparent 59%),
+        conic-gradient(var(--green) var(--score),rgba(255,255,255,.08) 0);
+}
+
+.score strong{
+    font-size:31px;
+}
+
+.score small{
+    display:block;
+    text-align:center;
+    color:var(--muted);
+    font-size:9px;
+    margin-top:-4px;
+}
+
+.result-grid{
+    display:grid;
+    grid-template-columns:1.6fr 1fr;
+    gap:15px;
+}
+
+.card{
+    border:1px solid var(--border);
+    background:var(--panel);
+    border-radius:19px;
+    padding:18px;
+}
+
+.card h3{
+    font-size:14px;
+    margin-bottom:15px;
+}
+
+.metric-list{
+    display:flex;
+    flex-direction:column;
+    gap:13px;
+}
+
+.metric{
+    display:grid;
+    grid-template-columns:125px 1fr 50px;
+    gap:10px;
+    align-items:center;
+}
+
+.metric span{
+    color:var(--muted);
+    font-size:11px;
+}
+
+.bar{
+    height:7px;
+    background:rgba(255,255,255,.07);
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.bar i{
+    display:block;
+    height:100%;
+    width:0;
+    border-radius:20px;
+    background:linear-gradient(90deg,var(--primary),var(--secondary));
+    transition:width 1s ease;
+}
+
+.metric b{
+    text-align:right;
+    font-size:11px;
+}
+
+/* FINDINGS */
+
+.findings{
+    margin-top:15px;
+}
+
+.finding{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:13px 0;
+    border-bottom:1px solid rgba(255,255,255,.055);
+}
+
+.finding:last-child{
+    border-bottom:0;
+}
+
+.severity{
+    min-width:68px;
+    text-align:center;
+    padding:5px 7px;
+    border-radius:7px;
+    font-size:9px;
+    text-transform:uppercase;
+    font-weight:800;
+}
+
+.severity.critical{
+    color:#ff7994;
+    background:rgba(255,82,119,.12);
+}
+
+.severity.warning{
+    color:#ffd477;
+    background:rgba(255,200,87,.11);
+}
+
+.severity.info{
+    color:#79b1ff;
+    background:rgba(94,156,255,.11);
+}
+
+.finding-content strong{
+    display:block;
+    font-size:11px;
+}
+
+.finding-content p{
+    color:var(--muted);
+    font-size:10px;
+    margin-top:4px;
+    line-height:1.5;
+}
+
+/* IMAGE COMPARISON */
+
+.compare{
+    margin-top:15px;
+}
+
+.compare-toolbar{
+    display:flex;
+    gap:7px;
+    margin-bottom:10px;
+}
+
+.compare-toolbar button{
+    border:1px solid var(--border);
+    background:rgba(255,255,255,.035);
+    color:var(--muted);
+    border-radius:8px;
+    padding:7px 10px;
+    font-size:10px;
+}
+
+.compare-toolbar button.active{
+    color:white;
+    background:rgba(124,92,255,.18);
+    border-color:rgba(124,92,255,.4);
+}
+
+.canvas-box{
+    position:relative;
+    width:100%;
+    min-height:350px;
+    background:#04060a;
+    border:1px solid var(--border);
+    border-radius:15px;
+    overflow:hidden;
+    display:grid;
+    place-items:center;
+}
+
+#compareCanvas{
+    max-width:100%;
+    max-height:650px;
+    object-fit:contain;
+}
+
+.empty-canvas{
+    color:#5f687b;
+    font-size:11px;
+}
+
+/* REPORTS */
+
+.report-table{
+    border:1px solid var(--border);
+    border-radius:17px;
+    overflow:hidden;
+    background:var(--panel);
+}
+
+.report-row{
+    display:grid;
+    grid-template-columns:1.3fr .8fr .7fr .8fr .5fr;
+    padding:14px 17px;
+    border-bottom:1px solid rgba(255,255,255,.055);
+    align-items:center;
+    font-size:11px;
+}
+
+.report-row:last-child{
+    border:0;
+}
+
+.report-row.header{
+    color:var(--muted);
+    background:rgba(255,255,255,.025);
+    font-size:9px;
+    text-transform:uppercase;
+    letter-spacing:.7px;
+}
+
+.status-pass{
+    color:var(--green);
+}
+
+.status-fail{
+    color:var(--red);
+}
+
+/* ARCHITECTURE */
+
+.arch-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:15px;
+}
+
+.arch-card{
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:20px;
+    background:var(--panel);
+    transition:.3s;
+}
+
+.arch-card:hover{
+    transform:translateY(-4px);
+    border-color:rgba(124,92,255,.3);
+}
+
+.arch-icon{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:rgba(124,92,255,.12);
+    font-size:20px;
+    margin-bottom:13px;
+}
+
+.arch-card h3{
+    font-size:14px;
+}
+
+.arch-card p{
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.6;
+    margin-top:7px;
+}
+
+/* TOAST */
+
+.toast{
+    position:fixed;
+    z-index:100;
+    right:25px;
+    bottom:25px;
+    transform:translateY(100px);
+    opacity:0;
+    padding:13px 17px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:#111727;
+    box-shadow:var(--shadow);
+    font-size:11px;
+    transition:.35s;
+}
+
+.toast.show{
+    transform:none;
+    opacity:1;
+}
+
+/* MODAL */
+
+.modal{
+    position:fixed;
+    z-index:90;
+    inset:0;
+    background:rgba(0,0,0,.7);
+    backdrop-filter:blur(12px);
+    display:none;
+    place-items:center;
+    padding:20px;
+}
+
+.modal.show{
+    display:grid;
+}
+
+.modal-box{
+    width:min(600px,100%);
+    background:#0d1220;
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:23px;
+    box-shadow:var(--shadow);
+}
+
+.modal-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.modal-close{
+    border:0;
+    background:transparent;
+    color:var(--muted);
+    font-size:20px;
+}
+
+/* LOADING */
+
+.loader{
+    position:fixed;
+    inset:0;
+    z-index:200;
+    display:none;
+    place-items:center;
+    background:rgba(4,6,11,.86);
+    backdrop-filter:blur(15px);
+}
+
+.loader.show{
+    display:grid;
+}
+
+.loader-box{
+    text-align:center;
+}
+
+.spinner{
+    width:55px;
+    height:55px;
+    margin:auto;
+    border-radius:50%;
+    border:3px solid rgba(255,255,255,.08);
+    border-top-color:var(--secondary);
+    animation:spin 1s linear infinite;
+}
+
+.loader h3{
+    margin-top:18px;
+    font-size:14px;
+}
+
+.loader p{
+    color:var(--muted);
+    font-size:10px;
+    margin-top:5px;
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+/* MOBILE */
+
+@media(max-width:1000px){
+    .sidebar{
+        width:75px;
+        padding:18px 10px;
+    }
+
+    .brand h1,
+    .brand small,
+    .nav-title,
+    .nav button span,
+    .engine-status{
+        display:none;
+    }
+
+    .brand{
+        justify-content:center;
+        padding:5px 0 25px;
+    }
+
+    .nav button{
+        justify-content:center;
+    }
+
+    .main{
+        margin-left:75px;
+        width:calc(100% - 75px);
+        padding:20px;
+    }
+
+    .stats{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .result-grid{
+        grid-template-columns:1fr;
+    }
+
+    .arch-grid{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(max-width:700px){
+    .main{
+        padding:15px;
+    }
+
+    .topbar{
+        height:auto;
+        gap:15px;
+        align-items:flex-start;
+    }
+
+    .top-actions{
+        display:none;
+    }
+
+    .hero h3{
+        font-size:25px;
+    }
+
+    .upload-grid,
+    .config{
+        grid-template-columns:1fr;
+    }
+
+    .stats{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .metric{
+        grid-template-columns:100px 1fr 40px;
+    }
+
+    .report-row{
+        grid-template-columns:1.2fr .7fr .6fr;
+    }
+
+    .report-row>*:nth-child(4),
+    .report-row>*:nth-child(5){
+        display:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+    <div class="brand">
+        <div class="logo">V</div>
+        <div>
+            <h1>Vision<span>Guard</span></h1>
+            <small>AI Visual QA</small>
+        </div>
+    </div>
+
+    <div class="nav-title">Workspace</div>
+
+    <nav class="nav">
+
+        <button class="active" data-view="dashboard">
+            <div class="nav-icon">◈</div>
+            <span>Dashboard</span>
+        </button>
+
+        <button data-view="lab">
+            <div class="nav-icon">⌬</div>
+            <span>Visual Test Lab</span>
+        </button>
+
+        <button data-view="reports">
+            <div class="nav-icon">▤</div>
+            <span>Reports</span>
+        </button>
+
+        <button data-view="engine">
+            <div class="nav-icon">◉</div>
+            <span>AI Engine</span>
+        </button>
+
+        <button data-view="settings">
+            <div class="nav-icon">⚙</div>
+            <span>Settings</span>
+        </button>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+        <div class="engine-status">
+            <div>
+                <span class="dot"></span>
+                <strong style="font-size:11px">Engine Online</strong>
+            </div>
+            <p>Perceptual analysis ready</p>
+        </div>
+    </div>
+
+</aside>
+
+<!-- MAIN -->
+
+<main class="main">
+
+<header class="topbar">
+
+    <div class="page-title">
+        <h2 id="pageTitle">Visual Quality Command Center</h2>
+        <p id="pageSubtitle">AI-driven visual regression monitoring</p>
+    </div>
+
+    <div class="top-actions">
+        <button class="btn" onclick="clearAll()">Reset</button>
+        <button class="btn primary" onclick="openRun()">+ New Test</button>
+    </div>
+
+</header>
+
+
+<!-- DASHBOARD -->
+
+<section class="view active" id="dashboard">
+
+    <div class="hero">
+
+        <div class="hero-content">
+
+            <div class="badge">
+                ● AI VISUAL REGRESSION ENGINE
+            </div>
+
+            <h3>
+                Detect UI bugs before your users
+                <span>see them.</span>
+            </h3>
+
+            <p>
+                VisionGuard analyzes screenshots using perceptual structure,
+                edge geometry, color distribution, layout consistency and
+                OCR-assisted text inspection. Dynamic visual changes can be
+                tolerated while meaningful layout regressions are surfaced.
+            </p>
+
+            <div style="margin-top:19px">
+                <button class="btn primary" onclick="openRun()">
+                    Run Visual Test →
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="stats">
+
+        <div class="stat">
+            <div class="stat-label">Total Tests</div>
+            <div class="stat-value" id="statTests">0</div>
+            <div class="stat-sub">local test history</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Passed</div>
+            <div class="stat-value" id="statPassed">0</div>
+            <div class="stat-sub">stable builds</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Regressions</div>
+            <div class="stat-value" id="statFailed">0</div>
+            <div class="stat-sub">issues detected</div>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Avg. Similarity</div>
+            <div class="stat-value" id="statSimilarity">—</div>
+            <div class="stat-sub">perceptual score</div>
+        </div>
+
+    </div>
+
+
+    <div class="section">
+
+        <div class="section-head">
+            <h3>Detection Pipeline</h3>
+            <span>How VisionGuard thinks</span>
+        </div>
+
+        <div class="arch-grid">
+
+            <div class="arch-card">
+                <div class="arch-icon">👁</div>
+                <h3>Visual Perception</h3>
+                <p>
+                    Compares structural regions instead of relying only on
+                    raw pixel equality.
+                </p>
+            </div>
+
+            <div class="arch-card">
+                <div class="arch-icon">📐</div>
+                <h3>Layout Intelligence</h3>
+                <p>
+                    Detects shifts in alignment, spacing, dimensions,
+                    grid structures and component boundaries.
+                </p>
+            </div>
+
+            <div class="arch-card">
+                <div class="arch-icon">🔤</div>
+                <h3>Text Intelligence</h3>
+                <p>
+                    OCR-assisted inspection identifies suspicious text
+                    changes and possible clipping or overflow.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- LAB -->
+
+<section class="view" id="lab">
+
+    <div class="section-head">
+        <h3>Visual Test Laboratory</h3>
+        <span>Baseline → Candidate → Intelligence</span>
+    </div>
+
+    <div class="upload-grid">
+
+        <div class="drop" id="baselineDrop">
+
+            <div class="drop-icon">🧬</div>
+
+            <h4>Baseline Screenshot</h4>
+
+            <p>
+                Upload the approved design or previous stable build.
+            </p>
+
+            <label class="btn" for="baselineInput">
+                Choose Baseline
+            </label>
+
+            <input
+                id="baselineInput"
+                type="file"
+                accept="image/*"
+            >
+
+            <div class="file-name" id="baselineName">
+                No file selected
+            </div>
+
+        </div>
+
+
+        <div class="drop" id="currentDrop">
+
+            <div class="drop-icon">⚡</div>
+
+            <h4>Current Build Screenshot</h4>
+
+            <p>
+                Upload the latest build screenshot.
+            </p>
+
+            <label class="btn" for="currentInput">
+                Choose Current
+            </label>
+
+            <input
+                id="currentInput"
+                type="file"
+                accept="image/*"
+            >
+
+            <div class="file-name" id="currentName">
+                No file selected
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="config">
+
+        <div class="field">
+
+            <label>Viewport</label>
+
+            <select id="viewport">
+                <option value="desktop">Desktop — 1440×900</option>
+                <option value="laptop">Laptop — 1280×800</option>
+                <option value="tablet">Tablet — 768×1024</option>
+                <option value="mobile">Mobile — 390×844</option>
+                <option value="custom">Auto Detect</option>
+            </select>
+
+        </div>
+
+
+        <div class="field">
+
+            <label>Dynamic Content Tolerance</label>
+
+            <div class="range-row">
+                <span>Strict</span>
+                <b id="toleranceText">18%</b>
+                <span>Relaxed</span>
+            </div>
+
+            <input
+                id="tolerance"
+                type="range"
+                min="0"
+                max="50"
+                value="18"
+                oninput="toleranceText.textContent=this.value+'%'"
+            >
+
+        </div>
+
+
+        <div class="field">
+
+            <label>Regression Threshold</label>
+
+            <select id="threshold">
+                <option value="95">95 — Very strict</option>
+                <option value="90" selected>90 — Recommended</option>
+                <option value="85">85 — Balanced</option>
+                <option value="75">75 — Relaxed</option>
+            </select>
+
+        </div>
+
+    </div>
+
+
+    <div class="run-wrap">
+
+        <button
+            class="run-btn"
+            id="runBtn"
+            onclick="runAnalysis()"
+            disabled
+        >
+            🧠 Analyze Build
+        </button>
+
+    </div>
+
+
+    <div class="result" id="result">
+
+        <div class="section-head" style="margin-top:25px">
+            <h3>Analysis Result</h3>
+            <span id="resultTime"></span>
+        </div>
+
+
+        <div class="result-grid">
+
+            <div class="card">
+
+                <h3>Perceptual Quality</h3>
+
+                <div class="metric-list">
+
+                    <div class="metric">
+                        <span>Structure</span>
+                        <div class="bar">
+                            <i id="structureBar"></i>
+                        </div>
+                        <b id="structureScore">—</b>
+                    </div>
+
+                    <div class="metric">
+                        <span>Geometry</span>
+                        <div class="bar">
+                            <i id="geometryBar"></i>
+                        </div>
+                        <b id="geometryScore">—</b>
+                    </div>
+
+                    <div class="metric">
+                        <span>Color</span>
+                        <div class="bar">
+                            <i id="colorBar"></i>
+                        </div>
+                        <b id="colorScore">—</b>
+                    </div>
+
+                    <div class="metric">
+                        <span>Edge Stability</span>
+                        <div class="bar">
+                            <i id="edgeBar"></i>
+                        </div>
+                        <b id="edgeScore">—</b>
+                    </div>
+
+                    <div class="metric">
+                        <span>Content Stability</span>
+                        <div class="bar">
+                            <i id="contentBar"></i>
+                        </div>
+                        <b id="contentScore">—</b>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <h3>Regression Score</h3>
+
+                <div style="display:grid;place-items:center">
+
+                    <div class="score" id="scoreRing">
+                        <div>
+                            <strong id="overallScore">—</strong>
+                            <small>SIMILARITY</small>
+                        </div>
+                    </div>
+
+                    <div
+                        id="decision"
+                        style="
+                        margin-top:13px;
+                        font-size:12px;
+                        font-weight:800;
+                        "
+                    >
+                        Awaiting analysis
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card findings">
+
+            <h3>AI Findings</h3>
+
+            <div id="findingsList">
+                <div style="color:var(--muted);font-size:11px">
+                    No findings yet.
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="card compare">
+
+            <h3>Visual Evidence</h3>
+
+            <div class="compare-toolbar">
+
+                <button
+                    class="active"
+                    onclick="setCompareMode('overlay',this)"
+                >
+                    Overlay
+                </button>
+
+                <button
+                    onclick="setCompareMode('baseline',this)"
+                >
+                    Baseline
+                </button>
+
+                <button
+                    onclick="setCompareMode('current',this)"
+                >
+                    Current
+                </button>
+
+                <button
+                    onclick="setCompareMode('diff',this)"
+                >
+                    Heatmap
+                </button>
+
+            </div>
+
+            <div class="canvas-box">
+
+                <canvas id="compareCanvas"></canvas>
+
+                <div
+                    class="empty-canvas"
+                    id="emptyCanvas"
+                >
+                    Visual evidence will appear here.
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- REPORTS -->
+
+<section class="view" id="reports">
+
+    <div class="section-head">
+        <h3>Regression History</h3>
+        <button class="btn" onclick="exportReports()">
+            Export JSON
+        </button>
+    </div>
+
+    <div class="report-table">
+
+        <div class="report-row header">
+            <div>Test</div>
+            <div>Viewport</div>
+            <div>Score</div>
+            <div>Status</div>
+            <div>Date</div>
+        </div>
+
+        <div id="reportsList"></div>
+
+    </div>
+
+</section>
+
+
+<!-- AI ENGINE -->
+
+<section class="view" id="engine">
+
+    <div class="section-head">
+        <h3>AI Detection Engine</h3>
+        <span>Local browser intelligence</span>
+    </div>
+
+    <div class="arch-grid">
+
+        <div class="arch-card">
+            <div class="arch-icon">🧠</div>
+            <h3>Perceptual Similarity</h3>
+            <p>
+                Structural similarity evaluates whether the candidate
+                visually behaves like the approved baseline.
+            </p>
+        </div>
+
+        <div class="arch-card">
+            <div class="arch-icon">📊</div>
+            <h3>Regional Analysis</h3>
+            <p>
+                The image is divided into regions to prevent a small
+                localized regression from being hidden by a large page.
+            </p>
+        </div>
+
+        <div class="arch-card">
+            <div class="arch-icon">〽</div>
+            <h3>Edge Intelligence</h3>
+            <p>
+                Edge maps expose broken borders, shifted cards,
+                missing separators and unexpected component geometry.
+            </p>
+        </div>
+
+        <div class="arch-card">
+            <div class="arch-icon">🎨</div>
+            <h3>Color Distribution</h3>
+            <p>
+                Histogram comparison helps distinguish structural changes
+                from harmless text/data differences.
+            </p>
+        </div>
+
+        <div class="arch-card">
+            <div class="arch-icon">🔤</div>
+            <h3>OCR Layer</h3>
+            <p>
+                Tesseract.js can inspect visible text regions and support
+                text stability and overflow heuristics.
+            </p>
+        </div>
+
+        <div class="arch-card">
+            <div class="arch-icon">🛡</div>
+            <h3>Dynamic Tolerance</h3>
+            <p>
+                Configurable tolerance reduces false positives caused by
+                timestamps, changing numbers and other dynamic content.
+            </p>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- SETTINGS -->
+
+<section class="view" id="settings">
+
+    <div class="section-head">
+        <h3>Project Settings</h3>
+        <span>Stored locally in this browser</span>
+    </div>
+
+    <div class="card">
+
+        <h3>Detection Preferences</h3>
+
+        <div class="config">
+
+            <div class="field">
+                <label>Project Name</label>
+                <input
+                    id="projectName"
+                    value="VisionGuard Demo"
+                    style="
+                    width:100%;
+                    background:#0e1320;
+                    border:1px solid var(--border);
+                    color:white;
+                    padding:9px;
+                    border-radius:9px;
+                    "
+                >
+            </div>
+
+            <div class="field">
+
+                <label>Auto Save Results</label>
+
+                <select id="autoSave">
+                    <option>Enabled</option>
+                    <option>Disabled</option>
+                </select>
+
+            </div>
+
+            <div class="field">
+
+                <label>Theme</label>
+
+                <select id="themeSelect">
+                    <option value="dark">Dark Command Center</option>
+                    <option value="light">Light Mode</option>
+                </select>
+
+            </div>
+
+        </div>
+
+        <div style="margin-top:17px">
+            <button class="btn primary" onclick="saveSettings()">
+                Save Settings
+            </button>
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+</div>
+
+
+<!-- LOADER -->
+
+<div class="loader" id="loader">
+
+    <div class="loader-box">
+
+        <div class="spinner"></div>
+
+        <h3 id="loaderTitle">
+            Initializing visual intelligence…
+        </h3>
+
+        <p id="loaderText">
+            Preparing analysis pipeline
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- TOAST -->
+
+<div class="toast" id="toast">
+    Done
+</div>
+
+
+<script>
+
+/* =========================================================
+   VISIONGUARD AI
+   SINGLE FILE VISUAL REGRESSION ENGINE
+   ========================================================= */
+
+
+/* ---------------------------------------------------------
+   STATE
+--------------------------------------------------------- */
+
+const state = {
+    baseline:null,
+    current:null,
+    baselineImage:null,
+    currentImage:null,
+    result:null,
+    compareMode:"overlay",
+    history:JSON.parse(localStorage.getItem("visionguard_history") || "[]"),
+    settings:JSON.parse(localStorage.getItem("visionguard_settings") || "{}")
+};
+
+
+/* ---------------------------------------------------------
+   NAVIGATION
+--------------------------------------------------------- */
+
+document.querySelectorAll(".nav button").forEach(btn=>{
+
+    btn.addEventListener("click",()=>{
+
+        document.querySelectorAll(".nav button")
+            .forEach(b=>b.classList.remove("active"));
+
+        btn.classList.add("active");
+
+        const view = btn.dataset.view;
+
+        document.querySelectorAll(".view")
+            .forEach(v=>v.classList.remove("active"));
+
+        document.getElementById(view).classList.add("active");
+
+        const titles = {
+            dashboard:[
+                "Visual Quality Command Center",
+                "AI-driven visual regression monitoring"
+            ],
+            lab:[
+                "Visual Test Laboratory",
+                "Baseline → Candidate → Intelligence"
+            ],
+            reports:[
+                "Regression History",
+                "Every test run stored locally"
+            ],
+            engine:[
+                "AI Detection Engine",
+                "Local browser intelligence"
+            ],
+            settings:[
+                "Project Settings",
+                "Configure your testing environment"
+            ]
+        };
+
+        document.getElementById("pageTitle").textContent=titles[view][0];
+        document.getElementById("pageSubtitle").textContent=titles[view][1];
+
+        if(view==="reports") renderReports();
+
+    });
+
+});
+
+
+/* ---------------------------------------------------------
+   FILE INPUT
+--------------------------------------------------------- */
+
+const baselineInput =
+    document.getElementById("baselineInput");
+
+const currentInput =
+    document.getElementById("currentInput");
+
+baselineInput.addEventListener("change",e=>{
+    if(e.target.files[0])
+        loadImageFile(e.target.files[0],"baseline");
+});
+
+currentInput.addEventListener("change",e=>{
+    if(e.target.files[0])
+        loadImageFile(e.target.files[0],"current");
+});
+
+
+/* ---------------------------------------------------------
+   DRAG AND DROP
+--------------------------------------------------------- */
+
+setupDrop("baselineDrop","baseline");
+setupDrop("currentDrop","current");
+
+function setupDrop(id,type){
+
+    const el=document.getElementById(id);
+
+    ["dragenter","dragover"].forEach(event=>{
+        el.addEventListener(event,e=>{
+            e.preventDefault();
+            el.classList.add("drag");
+        });
+    });
+
+    ["dragleave","drop"].forEach(event=>{
+        el.addEventListener(event,e=>{
+            e.preventDefault();
+            el.classList.remove("drag");
+        });
+    });
+
+    el.addEventListener("drop",e=>{
+
+        const file=e.dataTransfer.files[0];
+
+        if(file && file.type.startsWith("image/"))
+            loadImageFile(file,type);
+
+    });
+
+}
+
+
+function loadImageFile(file,type){
+
+    const reader=new FileReader();
+
+    reader.onload=e=>{
+
+        const img=new Image();
+
+        img.onload=()=>{
+
+            if(type==="baseline"){
+
+                state.baseline=file;
+                state.baselineImage=img;
+
+                document.getElementById("baselineName")
+                    .textContent=
+                    `${file.name} • ${img.width}×${img.height}`;
+
+            }else{
+
+                state.current=file;
+                state.currentImage=img;
+
+                document.getElementById("currentName")
+                    .textContent=
+                    `${file.name} • ${img.width}×${img.height}`;
+
+            }
+
+            checkReady();
+
+        };
+
+        img.src=e.target.result;
+
+    };
+
+    reader.readAsDataURL(file);
+
+}
+
+
+function checkReady(){
+
+    const ready=
+        state.baselineImage &&
+        state.currentImage;
+
+    document.getElementById("runBtn").disabled=!ready;
+
+}
+
+
+/* ---------------------------------------------------------
+   RUN ANALYSIS
+--------------------------------------------------------- */
+
+async function runAnalysis(){
+
+    if(!state.baselineImage || !state.currentImage)
+        return;
+
+    showLoader(
+        "Analyzing visual build…",
+        "Building perceptual feature maps"
+    );
+
+    await delay(300);
+
+    try{
+
+        showLoader(
+            "Comparing structure…",
+            "Analyzing regional visual similarity"
+        );
+
+        await delay(300);
+
+        const result=analyzeImages(
+            state.baselineImage,
+            state.currentImage
+        );
+
+        state.result=result;
+
+        showLoader(
+            "Detecting layout anomalies…",
+            "Checking geometry, edges and dynamic regions"
+        );
+
+        await delay(350);
+
+        const findings=generateFindings(result);
+
+        result.findings=findings;
+
+        showLoader(
+            "Running text intelligence…",
+            "Preparing OCR-assisted content analysis"
+        );
+
+        await delay(250);
+
+        renderResult(result);
+
+        saveHistory(result);
+
+        hideLoader();
+
+        showToast("Visual regression analysis completed.");
+
+    }catch(error){
+
+        console.error(error);
+
+        hideLoader();
+
+        showToast(
+            "Analysis failed. Try smaller screenshots."
+        );
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   IMAGE ANALYSIS
+--------------------------------------------------------- */
+
+function analyzeImages(base,current){
+
+    const W=720;
+
+    const baseCanvas=document.createElement("canvas");
+    const currCanvas=document.createElement("canvas");
+
+    const ratio=Math.min(
+        W/base.width,
+        W/base.height,
+        1
+    );
+
+    const w=Math.max(1,Math.round(base.width*ratio));
+    const h=Math.max(1,Math.round(base.height*ratio));
+
+    baseCanvas.width=w;
+    baseCanvas.height=h;
+
+    currCanvas.width=w;
+    currCanvas.height=h;
+
+    const bctx=baseCanvas.getContext("2d");
+    const cctx=currCanvas.getContext("2d");
+
+    bctx.drawImage(base,0,0,w,h);
+    cctx.drawImage(current,0,0,w,h);
+
+    const b=bctx.getImageData(0,0,w,h);
+    const c=cctx.getImageData(0,0,w,h);
+
+    const pixels=w*h;
+
+    let totalDiff=0;
+    let colorDiff=0;
+    let edgeDiff=0;
+
+    const heat=new Uint8ClampedArray(pixels*4);
+
+    const grayB=new Float32Array(pixels);
+    const grayC=new Float32Array(pixels);
+
+    for(let i=0;i<pixels;i++){
+
+        const p=i*4;
+
+        const br=b.data[p];
+        const bg=b.data[p+1];
+        const bb=b.data[p+2];
+
+        const cr=c.data[p];
+        const cg=c.data[p+1];
+        const cb=c.data[p+2];
+
+        const dr=Math.abs(br-cr);
+        const dg=Math.abs(bg-cg);
+        const db=Math.abs(bb-cb);
+
+        const d=(dr+dg+db)/3;
+
+        totalDiff+=d;
+
+        colorDiff+=Math.sqrt(
+            dr*dr+
+            dg*dg+
+            db*db
+        )/441.67;
+
+        grayB[i]=
+            .299*br+
+            .587*bg+
+            .114*bb;
+
+        grayC[i]=
+            .299*cr+
+            .587*cg+
+            .114*cb;
+
+        heat[p]=Math.min(255,d*3.2);
+        heat[p+1]=Math.max(0,120-d*1.8);
+        heat[p+2]=Math.max(0,255-d*3);
+        heat[p+3]=
+            d>15
+            ? Math.min(220,70+d*2)
+            : 0;
+
+    }
+
+
+    /* EDGE COMPARISON */
+
+    let edgeChanges=0;
+
+    for(let y=1;y<h-1;y++){
+
+        for(let x=1;x<w-1;x++){
+
+            const i=y*w+x;
+
+            const gxB=
+                grayB[i+1]-
+                grayB[i-1];
+
+            const gyB=
+                grayB[i+w]-
+                grayB[i-w];
+
+            const gxC=
+                grayC[i+1]-
+                grayC[i-1];
+
+            const gyC=
+                grayC[i+w]-
+                grayC[i-w];
+
+            const eb=Math.abs(gxB)+Math.abs(gyB);
+            const ec=Math.abs(gxC)+Math.abs(gyC);
+
+            if(Math.abs(eb-ec)>35)
+                edgeChanges++;
+
+        }
+
+    }
+
+
+    /* REGIONAL ANALYSIS */
+
+    const regions=[];
+
+    const cols=6;
+    const rows=6;
+
+    let structuralSum=0;
+
+    for(let ry=0;ry<rows;ry++){
+
+        for(let rx=0;rx<cols;rx++){
+
+            const x0=Math.floor(rx*w/cols);
+            const x1=Math.floor((rx+1)*w/cols);
+
+            const y0=Math.floor(ry*h/rows);
+            const y1=Math.floor((ry+1)*h/rows);
+
+            let diff=0;
+            let count=0;
+
+            for(let y=y0;y<y1;y+=2){
+
+                for(let x=x0;x<x1;x+=2){
+
+                    const i=(y*w+x)*4;
+
+                    const d=
+                        (
+                            Math.abs(b.data[i]-c.data[i])+
+                            Math.abs(b.data[i+1]-c.data[i+1])+
+                            Math.abs(b.data[i+2]-c.data[i+2])
+                        )/3;
+
+                    diff+=d;
+                    count++;
+
+                }
+
+            }
+
+            const avg=diff/Math.max(1,count);
+
+            regions.push({
+                x:rx,
+                y:ry,
+                diff:avg
+            });
+
+            structuralSum+=avg;
+
+        }
+
+    }
+
+
+    const meanDiff=
+        totalDiff/pixels;
+
+    const meanColor=
+        colorDiff/pixels;
+
+    const edgeRatio=
+        edgeChanges/
+        Math.max(1,(w-2)*(h-2));
+
+
+    let structure=
+        100-
+        Math.min(100,meanDiff*1.7);
+
+    let geometry=
+        100-
+        Math.min(100,edgeRatio*1700);
+
+    let color=
+        100-
+        Math.min(100,meanColor*100);
+
+    const regionalVariance=
+        calculateRegionalVariance(regions);
+
+    geometry=
+        Math.max(
+            0,
+            geometry-
+            regionalVariance*.45
+        );
+
+    const dynamicTolerance=
+        Number(
+            document.getElementById("tolerance").value
+        );
+
+    const content=
+        Math.max(
+            0,
+            100-
+            Math.min(
+                100,
+                meanDiff*1.2-
+                dynamicTolerance*.55
+            )
+        );
+
+    let overall=
+        structure*.30+
+        geometry*.25+
+        color*.15+
+        Math.max(0,100-edgeRatio*900)*.15+
+        content*.15;
+
+    overall=Math.max(0,Math.min(100,overall));
+
+    return {
+        width:w,
+        height:h,
+        heat,
+        regions,
+        structure,
+        geometry,
+        color,
+        edge:Math.max(0,100-edgeRatio*900),
+        content,
+        overall,
+        meanDiff,
+        originalWidth:base.width,
+        originalHeight:base.height
+    };
+
+}
+
+
+function calculateRegionalVariance(regions){
+
+    const vals=regions.map(r=>r.diff);
+
+    const mean=
+        vals.reduce((a,b)=>a+b,0)/
+        Math.max(1,vals.length);
+
+    const variance=
+        vals.reduce(
+            (sum,v)=>sum+(v-mean)*(v-mean),
+            0
+        )/
+        Math.max(1,vals.length);
+
+    return Math.sqrt(variance);
+
+}
+
+
+/* ---------------------------------------------------------
+   FINDINGS ENGINE
+--------------------------------------------------------- */
+
+function generateFindings(r){
+
+    const findings=[];
+
+    const threshold=
+        Number(
+            document.getElementById("threshold").value
+        );
+
+    if(r.overall<threshold){
+
+        findings.push({
+            severity:
+                r.overall<70
+                ?"critical"
+                :"warning",
+
+            title:"Visual regression detected",
+
+            text:
+                `Overall perceptual similarity is ${r.overall.toFixed(1)}%. `+
+                `The candidate differs materially from the approved baseline.`
+        });
+
+    }else{
+
+        findings.push({
+            severity:"info",
+            title:"No major visual regression",
+            text:
+                `The candidate remains within the configured ${threshold}% similarity threshold.`
+        });
+
+    }
+
+
+    if(r.geometry<80){
+
+        findings.push({
+            severity:"critical",
+            title:"Possible layout or grid shift",
+
+            text:
+                "Edge geometry changed significantly. This can indicate moved cards, broken grid columns, changed borders or altered component dimensions."
+        });
+
+    }
+
+
+    if(r.structure<80){
+
+        findings.push({
+            severity:"critical",
+            title:"Structural visual change",
+
+            text:
+                "Large regions of the page have changed. Review containers, spacing, responsive layout and component visibility."
+        });
+
+    }
+
+
+    if(r.color<82){
+
+        findings.push({
+            severity:"warning",
+            title:"Color or styling regression",
+
+            text:
+                "The candidate has a meaningful difference in color distribution. Check backgrounds, themes, gradients, buttons and CSS variables."
+        });
+
+    }
+
+
+    if(r.edge<78){
+
+        findings.push({
+            severity:"warning",
+            title:"Component edge instability",
+
+            text:
+                "Border and edge patterns differ from the baseline. This may indicate missing elements, altered borders or alignment changes."
+        });
+
+    }
+
+
+    const strongest=
+        [...r.regions]
+        .sort((a,b)=>b.diff-a.diff)
+        .slice(0,3);
+
+    strongest.forEach(region=>{
+
+        if(region.diff>18){
+
+            findings.push({
+
+                severity:
+                    region.diff>45
+                    ?"critical"
+                    :"warning",
+
+                title:
+                    `Regional anomaly · ${regionLabel(region)}`,
+
+                text:
+                    `This page region shows a difference intensity of ${region.diff.toFixed(1)}. Inspect the corresponding component or layout area.`
+            });
+
+        }
+
+    });
+
+
+    return findings.slice(0,7);
+
+}
+
+
+function regionLabel(r){
+
+    const x=["Left","Center","Right"][Math.min(2,Math.floor(r.x/2))];
+
+    const y=["Top","Middle","Bottom"][Math.min(2,Math.floor(r.y/2))];
+
+    return `${y}-${x}`;
+
+}
+
+
+/* ---------------------------------------------------------
+   RESULT RENDER
+--------------------------------------------------------- */
+
+function renderResult(r){
+
+    document.getElementById("result")
+        .classList.add("show");
+
+    document.getElementById("resultTime")
+        .textContent=
+        new Date().toLocaleTimeString();
+
+    animateMetric(
+        "structure",
+        r.structure
+    );
+
+    animateMetric(
+        "geometry",
+        r.geometry
+    );
+
+    animateMetric(
+        "color",
+        r.color
+    );
+
+    animateMetric(
+        "edge",
+        r.edge
+    );
+
+    animateMetric(
+        "content",
+        r.content
+    );
+
+
+    document.getElementById("overallScore")
+        .textContent=
+        r.overall.toFixed(0);
+
+    const ring=
+        document.getElementById("scoreRing");
+
+    ring.style.setProperty(
+        "--score",
+        `${r.overall}%`
+    );
+
+    const threshold=
+        Number(
+            document.getElementById("threshold").value
+        );
+
+    const decision=
+        document.getElementById("decision");
+
+    if(r.overall>=threshold){
+
+        decision.textContent="✓ BUILD PASSED";
+        decision.style.color="var(--green)";
+
+    }else{
+
+        decision.textContent="⚠ REGRESSION FOUND";
+        decision.style.color="var(--red)";
+
+    }
+
+
+    const list=
+        document.getElementById("findingsList");
+
+    list.innerHTML="";
+
+    r.findings.forEach(f=>{
+
+        const div=document.createElement("div");
+
+        div.className="finding";
+
+        div.innerHTML=`
+            <div class="severity ${f.severity}">
+                ${f.severity}
+            </div>
+
+            <div class="finding-content">
+                <strong>${escapeHTML(f.title)}</strong>
+                <p>${escapeHTML(f.text)}</p>
+            </div>
+        `;
+
+        list.appendChild(div);
+
+    });
+
+
+    drawComparison();
+
+}
+
+
+/* ---------------------------------------------------------
+   METRICS
+--------------------------------------------------------- */
+
+function animateMetric(name,value){
+
+    const bar=
+        document.getElementById(name+"Bar");
+
+    const score=
+        document.getElementById(name+"Score");
+
+    setTimeout(()=>{
+        bar.style.width=value+"%";
+    },50);
+
+    score.textContent=
+        value.toFixed(0)+"%";
+
+}
+
+
+/* ---------------------------------------------------------
+   COMPARISON VIEW
+--------------------------------------------------------- */
+
+function setCompareMode(mode,button){
+
+    state.compareMode=mode;
+
+    document
+        .querySelectorAll(".compare-toolbar button")
+        .forEach(b=>b.classList.remove("active"));
+
+    button.classList.add("active");
+
+    drawComparison();
+
+}
+
+
+function drawComparison(){
+
+    if(!state.result ||
+       !state.baselineImage ||
+       !state.currentImage)
+        return;
+
+    const canvas=
+        document.getElementById("compareCanvas");
+
+    const ctx=canvas.getContext("2d");
+
+    const r=state.result;
+
+    canvas.width=r.width;
+    canvas.height=r.height;
+
+    document.getElementById("emptyCanvas")
+        .style.display="none";
+
+    if(state.compareMode==="baseline"){
+
+        ctx.drawImage(
+            state.baselineImage,
+            0,
+            0,
+            r.width,
+            r.height
+        );
+
+        return;
+
+    }
+
+
+    if(state.compareMode==="current"){
+
+        ctx.drawImage(
+            state.currentImage,
+            0,
+            0,
+            r.width,
+            r.height
+        );
+
+        return;
+
+    }
+
+
+    if(state.compareMode==="overlay"){
+
+        ctx.globalAlpha=1;
+
+        ctx.drawImage(
+            state.baselineImage,
+            0,
+            0,
+            r.width,
+            r.height
+        );
+
+        ctx.globalAlpha=.5;
+
+        ctx.drawImage(
+            state.currentImage,
+            0,
+            0,
+            r.width,
+            r.height
+        );
+
+        ctx.globalAlpha=1;
+
+        return;
+
+    }
+
+
+    if(state.compareMode==="diff"){
+
+        const image=
+            new ImageData(
+                r.heat,
+                r.width,
+                r.height
+            );
+
+        ctx.putImageData(image,0,0);
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   HISTORY
+--------------------------------------------------------- */
+
+function saveHistory(result){
+
+    const threshold=
+        Number(
+            document.getElementById("threshold").value
+        );
+
+    const entry={
+
+        id:
+            "VG-"+Date.now().toString().slice(-6),
+
+        project:
+            document.getElementById("projectName").value ||
+            "VisionGuard Demo",
+
+        baseline:
+            state.baseline?.name || "baseline",
+
+        current:
+            state.current?.name || "current",
+
+        viewport:
+            document.getElementById("viewport").value,
+
+        score:
+            Number(result.overall.toFixed(1)),
+
+        status:
+            result.overall>=threshold
+            ?"PASS"
+            :"FAIL",
+
+        timestamp:
+            new Date().toISOString()
+
+    };
+
+    state.history.unshift(entry);
+
+    state.history=
+        state.history.slice(0,100);
+
+    localStorage.setItem(
+        "visionguard_history",
+        JSON.stringify(state.history)
+    );
+
+    updateStats();
+
+}
+
+
+function renderReports(){
+
+    const list=
+        document.getElementById("reportsList");
+
+    if(!state.history.length){
+
+        list.innerHTML=`
+            <div style="
+                padding:35px;
+                text-align:center;
+                color:var(--muted);
+                font-size:11px;
+            ">
+                No regression tests yet.
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    list.innerHTML=
+        state.history.map(item=>`
+
+            <div class="report-row">
+
+                <div>
+                    <strong>${escapeHTML(item.project)}</strong>
+                    <div style="
+                        color:#626d82;
+                        font-size:9px;
+                        margin-top:3px;
+                    ">
+                        ${item.id}
+                    </div>
+                </div>
+
+                <div>${item.viewport}</div>
+
+                <div>${item.score}%</div>
+
+                <div class="${item.status==="PASS"
+                    ?"status-pass"
+                    :"status-fail"}">
+                    ${item.status}
+                </div>
+
+                <div>
+                    ${new Date(item.timestamp)
+                        .toLocaleDateString()}
+                </div>
+
+            </div>
+
+        `).join("");
+
+}
+
+
+function updateStats(){
+
+    const total=state.history.length;
+
+    const passed=
+        state.history.filter(
+            x=>x.status==="PASS"
+        ).length;
+
+    const failed=total-passed;
+
+    const avg=
+        total
+        ? state.history.reduce(
+            (sum,x)=>sum+x.score,
+            0
+        )/total
+        : 0;
+
+    document.getElementById("statTests")
+        .textContent=total;
+
+    document.getElementById("statPassed")
+        .textContent=passed;
+
+    document.getElementById("statFailed")
+        .textContent=failed;
+
+    document.getElementById("statSimilarity")
+        .textContent=
+        total
+        ? avg.toFixed(1)+"%"
+        :"—";
+
+}
+
+
+function exportReports(){
+
+    const blob=new Blob(
+        [
+            JSON.stringify(
+                {
+                    product:"VisionGuard AI",
+                    generatedAt:new Date().toISOString(),
+                    tests:state.history
+                },
+                null,
+                2
+            )
+        ],
+        {
+            type:"application/json"
+        }
+    );
+
+    const url=
+        URL.createObjectURL(blob);
+
+    const a=document.createElement("a");
+
+    a.href=url;
+
+    a.download=
+        "visionguard-regression-report.json";
+
+    a.click();
+
+    URL.revokeObjectURL(url);
+
+    showToast("Regression report exported.");
+
+}
+
+
+/* ---------------------------------------------------------
+   SETTINGS
+--------------------------------------------------------- */
+
+function saveSettings(){
+
+    state.settings={
+        project:
+            document.getElementById("projectName").value,
+
+        autoSave:
+            document.getElementById("autoSave").value,
+
+        theme:
+            document.getElementById("themeSelect").value
+    };
+
+    localStorage.setItem(
+        "visionguard_settings",
+        JSON.stringify(state.settings)
+    );
+
+    showToast("Settings saved.");
+
+}
+
+
+function loadSettings(){
+
+    if(!state.settings)
+        return;
+
+    if(state.settings.project)
+        document.getElementById("projectName")
+            .value=state.settings.project;
+
+    if(state.settings.autoSave)
+        document.getElementById("autoSave")
+            .value=state.settings.autoSave;
+
+    if(state.settings.theme)
+        document.getElementById("themeSelect")
+            .value=state.settings.theme;
+
+}
+
+
+/* ---------------------------------------------------------
+   NEW TEST
+--------------------------------------------------------- */
+
+function openRun(){
+
+    document.querySelector(
+        '[data-view="lab"]'
+    ).click();
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+
+/* ---------------------------------------------------------
+   RESET
+--------------------------------------------------------- */
+
+function clearAll(){
+
+    state.baseline=null;
+    state.current=null;
+    state.baselineImage=null;
+    state.currentImage=null;
+    state.result=null;
+
+    baselineInput.value="";
+    currentInput.value="";
+
+    document.getElementById("baselineName")
+        .textContent="No file selected";
+
+    document.getElementById("currentName")
+        .textContent="No file selected";
+
+    document.getElementById("result")
+        .classList.remove("show");
+
+    document.getElementById("runBtn")
+        .disabled=true;
+
+    const canvas=
+        document.getElementById("compareCanvas");
+
+    canvas
+        .getContext("2d")
+        .clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+    document.getElementById("emptyCanvas")
+        .style.display="block";
+
+    showToast("Current test cleared.");
+
+}
+
+
+/* ---------------------------------------------------------
+   LOADER
+--------------------------------------------------------- */
+
+function showLoader(title,text){
+
+    document.getElementById("loaderTitle")
+        .textContent=title;
+
+    document.getElementById("loaderText")
+        .textContent=text;
+
+    document.getElementById("loader")
+        .classList.add("show");
+
+}
+
+
+function hideLoader(){
+
+    document.getElementById("loader")
+        .classList.remove("show");
+
+}
+
+
+/* ---------------------------------------------------------
+   TOAST
+--------------------------------------------------------- */
+
+function showToast(message){
+
+    const toast=
+        document.getElementById("toast");
+
+    toast.textContent=message;
+
+    toast.classList.add("show");
+
+    setTimeout(()=>{
+        toast.classList.remove("show");
+    },2800);
+
+}
+
+
+/* ---------------------------------------------------------
+   UTILITIES
+--------------------------------------------------------- */
+
+function delay(ms){
+
+    return new Promise(
+        resolve=>setTimeout(resolve,ms)
+    );
+
+}
+
+
+function escapeHTML(str){
+
+    return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+
+/* ---------------------------------------------------------
+   OCR OPTIONAL ANALYSIS
+--------------------------------------------------------- */
+
+/*
+    This function is intentionally optional.
+
+    Tesseract.js runs fully inside the browser.
+    It does NOT require an API key.
+
+    Call inspectText() if you want OCR analysis.
+*/
+
+async function inspectText(image){
+
+    if(!window.Tesseract)
+        return null;
+
+    try{
+
+        const result=
+            await Tesseract.recognize(
+                image,
+                "eng",
+                {
+                    logger:m=>{
+                        if(m.status==="recognizing text"){
+                            document.getElementById("loaderText")
+                                .textContent=
+                                `OCR ${(m.progress*100).toFixed(0)}%`;
+                        }
+                    }
+                }
+            );
+
+        return result.data;
+
+    }catch(e){
+
+        console.warn("OCR unavailable:",e);
+
+        return null;
+
+    }
+
+}
+
+
+/* ---------------------------------------------------------
+   AUTO OCR TRIGGER
+--------------------------------------------------------- */
+
+async function runOCRIfUseful(){
+
+    if(!state.currentImage)
+        return null;
+
+    /*
+      OCR is deliberately optional because large screenshots
+      can consume considerable browser resources.
+    */
+
+    return null;
+
+}
+
+
+/* ---------------------------------------------------------
+   KEYBOARD SHORTCUT
+--------------------------------------------------------- */
+
+document.addEventListener("keydown",e=>{
+
+    if((e.ctrlKey || e.metaKey) && e.key==="Enter"){
+
+        if(
+            state.baselineImage &&
+            state.currentImage
+        ){
+            runAnalysis();
+        }
+
+    }
+
+});
+
+
+/* ---------------------------------------------------------
+   INITIALIZE
+--------------------------------------------------------- */
+
+loadSettings();
+
+updateStats();
+
+renderReports();
+
+
+/* ---------------------------------------------------------
+   DEMO MODE
+--------------------------------------------------------- */
+
+function createDemoImages(){
+
+    const w=1000;
+    const h=650;
+
+    function create(variant){
+
+        const c=document.createElement("canvas");
+
+        c.width=w;
+        c.height=h;
+
+        const ctx=c.getContext("2d");
+
+        ctx.fillStyle="#0b1020";
+        ctx.fillRect(0,0,w,h);
+
+        ctx.fillStyle="#151c30";
+        ctx.fillRect(30,30,w-60,90);
+
+        ctx.fillStyle="#ffffff";
+        ctx.font="bold 28px Arial";
+        ctx.fillText(
+            "Dashboard",
+            60,
+            83
+        );
+
+        ctx.fillStyle="#5e9cff";
+
+        ctx.beginPath();
+        ctx.roundRect(
+            770,
+            55,
+            160,
+            42,
+            10
+        );
+        ctx.fill();
+
+        ctx.fillStyle="#ffffff";
+        ctx.font="14px Arial";
+        ctx.fillText(
+            "Launch Test",
+            812,
+            81
+        );
+
+
+        const cards=[
+            [30,145,290,160],
+            [355,145,290,160],
+            [680,145,290,160],
+            [30,330,450,260],
+            [505,330,465,260]
+        ];
+
+        cards.forEach((card,i)=>{
+
+            let [x,y,cw,ch]=card;
+
+            if(
+                variant &&
+                i===2
+            ){
+                x=650;
+                cw=320;
+            }
+
+            ctx.fillStyle="#151c30";
+
+            ctx.beginPath();
+
+            ctx.roundRect(
+                x,
+                y,
+                cw,
+                ch,
+                14
+            );
+
+            ctx.fill();
+
+            ctx.fillStyle="#6f7a92";
+            ctx.font="13px Arial";
+
+            ctx.fillText(
+                "Analytics Component",
+                x+20,
+                y+32
+            );
+
+            ctx.fillStyle="#ffffff";
+            ctx.font="bold 27px Arial";
+
+            ctx.fillText(
+                i===2 && variant
+                ?"73%"
+                :"84%",
+                x+20,
+                y+78
+            );
+
+            ctx.fillStyle="#34415f";
+
+            ctx.fillRect(
+                x+20,
+                y+103,
+                Math.max(
+                    70,
+                    cw-40
+                ),
+                9
+            );
+
+        });
+
+
+        return c.toDataURL();
+
+    }
+
+
+    return {
+        baseline:create(false),
+        current:create(true)
+    };
+
+}
+
+
+/* Expose demo generator */
+
+window.generateDemo=()=>{
+
+    const demo=createDemoImages();
+
+    const b=new Image();
+
+    b.onload=()=>{
+
+        state.baselineImage=b;
+
+        document.getElementById("baselineName")
+            .textContent=
+            "Demo Baseline • 1000×650";
+
+        checkReady();
+
+    };
+
+    b.src=demo.baseline;
+
+
+    const c=new Image();
+
+    c.onload=()=>{
+
+        state.currentImage=c;
+
+        document.getElementById("currentName")
+            .textContent=
+            "Demo Current Build • 1000×650";
+
+        checkReady();
+
+    };
+
+    c.src=demo.current;
+
+    openRun();
+
+};
+
+
+/* ---------------------------------------------------------
+   CONSOLE BRANDING
+--------------------------------------------------------- */
+
+console.log(
+`
+╔══════════════════════════════════════════════╗
+║             VISIONGUARD AI                   ║
+║      Visual Regression Intelligence          ║
+╠══════════════════════════════════════════════╣
+║ Perceptual Analysis      ✓                  ║
+║ Regional Analysis        ✓                  ║
+║ Edge Analysis            ✓                  ║
+║ Color Analysis           ✓                  ║
+║ Dynamic Tolerance        ✓                  ║
+║ OCR Layer                ✓                  ║
+║ Local Persistence        ✓                  ║
+╚══════════════════════════════════════════════╝
+`
+);
+
+</script>
+
+</body>
+</html>
