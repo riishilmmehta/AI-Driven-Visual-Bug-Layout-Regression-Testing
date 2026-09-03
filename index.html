@@ -3,26 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>VisionGuard AI — Visual Bug & Layout Regression Testing</title>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<title>VisionGuard AI — Visual Regression Command Center</title>
 
 <style>
 :root{
-    --bg:#07090f;
-    --bg2:#0c101a;
-    --panel:rgba(16,21,34,.82);
-    --panel2:rgba(20,27,43,.92);
+    --bg:#070912;
+    --panel:#0d1220;
+    --panel2:#11182a;
     --border:rgba(255,255,255,.09);
-    --text:#f5f7ff;
-    --muted:#8993aa;
-    --primary:#7c5cff;
-    --secondary:#00d9ff;
-    --green:#27e39b;
-    --yellow:#ffc857;
-    --red:#ff5277;
-    --blue:#5e9cff;
-    --shadow:0 25px 80px rgba(0,0,0,.38);
+    --text:#eef2ff;
+    --muted:#8490aa;
+    --cyan:#39d9ff;
+    --blue:#667cff;
+    --green:#4ade80;
+    --yellow:#facc15;
+    --red:#ff5268;
+    --orange:#ff9d42;
+    --purple:#b875ff;
+    --shadow:0 25px 80px rgba(0,0,0,.4);
 }
 
 *{
@@ -32,21 +31,19 @@
 }
 
 html,body{
-    width:100%;
     min-height:100%;
-    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:
-        radial-gradient(circle at 10% 10%,rgba(124,92,255,.16),transparent 30%),
-        radial-gradient(circle at 90% 20%,rgba(0,217,255,.11),transparent 30%),
-        var(--bg);
+    background:var(--bg);
     color:var(--text);
+    font-family:Inter,Segoe UI,Arial,sans-serif;
 }
 
 body{
     overflow-x:hidden;
 }
 
-button,input,select{
+button,
+input,
+select{
     font:inherit;
 }
 
@@ -54,164 +51,203 @@ button{
     cursor:pointer;
 }
 
+canvas{
+    display:block;
+}
+
 .app{
     display:flex;
     min-height:100vh;
 }
 
-/* SIDEBAR */
+/* =========================================================
+   BACKGROUND
+========================================================= */
 
-.sidebar{
+.bg{
     position:fixed;
-    z-index:50;
-    left:0;
-    top:0;
-    bottom:0;
-    width:255px;
-    padding:24px 16px;
-    border-right:1px solid var(--border);
-    background:rgba(7,9,15,.84);
-    backdrop-filter:blur(25px);
+    inset:0;
+    pointer-events:none;
+    overflow:hidden;
+    z-index:-2;
 }
 
-.brand{
-    display:flex;
-    align-items:center;
-    gap:12px;
-    padding:6px 10px 25px;
+.bg-grid{
+    position:absolute;
+    inset:0;
+    opacity:.22;
+    background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:42px 42px;
+    mask-image:linear-gradient(to bottom,black,transparent);
+}
+
+.orb{
+    position:absolute;
+    border-radius:50%;
+    filter:blur(80px);
+    opacity:.18;
+}
+
+.orb.one{
+    width:400px;
+    height:400px;
+    background:#4169ff;
+    top:-150px;
+    left:20%;
+}
+
+.orb.two{
+    width:350px;
+    height:350px;
+    background:#c13fff;
+    right:-100px;
+    bottom:5%;
+}
+
+.orb.three{
+    width:300px;
+    height:300px;
+    background:#00d9ff;
+    left:-150px;
+    bottom:10%;
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.sidebar{
+    width:250px;
+    border-right:1px solid var(--border);
+    background:rgba(8,12,23,.88);
+    backdrop-filter:blur(25px);
+    padding:22px 15px;
+    position:fixed;
+    top:0;
+    bottom:0;
+    left:0;
+    z-index:20;
 }
 
 .logo{
-    width:43px;
-    height:43px;
-    border-radius:14px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:5px 10px 25px;
+}
+
+.logo-icon{
+    width:42px;
+    height:42px;
+    border-radius:13px;
     display:grid;
     place-items:center;
+    font-size:22px;
+    background:linear-gradient(135deg,#536dff,#bd55ff);
+    box-shadow:0 0 30px rgba(102,124,255,.35);
+}
+
+.logo-text{
     font-weight:900;
-    font-size:19px;
-    background:linear-gradient(135deg,var(--primary),var(--secondary));
-    box-shadow:0 0 30px rgba(124,92,255,.35);
+    letter-spacing:.5px;
 }
 
-.brand h1{
-    font-size:17px;
-    letter-spacing:.2px;
-}
-
-.brand span{
-    color:var(--secondary);
-}
-
-.brand small{
+.logo-text small{
     display:block;
-    margin-top:2px;
     color:var(--muted);
-    font-size:10px;
-    letter-spacing:1.4px;
-    text-transform:uppercase;
+    font-size:9px;
+    letter-spacing:2px;
+    margin-top:2px;
 }
 
 .nav-title{
-    padding:16px 12px 8px;
+    color:#56627d;
     font-size:10px;
-    color:#667087;
-    letter-spacing:1.5px;
-    text-transform:uppercase;
+    font-weight:800;
+    letter-spacing:2px;
+    padding:12px 12px 7px;
 }
 
-.nav{
+.nav-item{
+    border:1px solid transparent;
     display:flex;
-    flex-direction:column;
-    gap:6px;
-}
-
-.nav button{
-    position:relative;
-    border:0;
-    color:#9ca6ba;
-    background:transparent;
-    padding:12px 13px;
-    border-radius:12px;
-    text-align:left;
-    display:flex;
-    gap:12px;
     align-items:center;
-    transition:.25s;
+    gap:12px;
+    padding:12px;
+    border-radius:12px;
+    color:#8994ac;
+    margin-bottom:5px;
+    transition:.2s;
 }
 
-.nav button:hover{
-    background:rgba(255,255,255,.055);
+.nav-item:hover{
     color:white;
+    background:rgba(255,255,255,.04);
 }
 
-.nav button.active{
-    background:linear-gradient(90deg,rgba(124,92,255,.2),rgba(0,217,255,.04));
+.nav-item.active{
     color:white;
-}
-
-.nav button.active:before{
-    content:"";
-    position:absolute;
-    left:0;
-    top:8px;
-    bottom:8px;
-    width:3px;
-    border-radius:10px;
-    background:linear-gradient(var(--primary),var(--secondary));
+    background:linear-gradient(90deg,rgba(102,124,255,.18),rgba(102,124,255,.03));
+    border-color:rgba(102,124,255,.18);
 }
 
 .nav-icon{
-    width:24px;
+    width:28px;
     text-align:center;
 }
 
 .sidebar-bottom{
     position:absolute;
-    left:16px;
-    right:16px;
-    bottom:20px;
+    left:15px;
+    right:15px;
+    bottom:18px;
 }
 
 .engine-status{
-    padding:13px;
-    border:1px solid var(--border);
-    background:rgba(255,255,255,.035);
+    padding:14px;
     border-radius:14px;
+    border:1px solid rgba(74,222,128,.14);
+    background:rgba(74,222,128,.05);
 }
 
-.engine-status .dot{
+.status-dot{
     width:8px;
     height:8px;
-    display:inline-block;
-    background:var(--green);
     border-radius:50%;
-    margin-right:7px;
+    background:var(--green);
+    display:inline-block;
     box-shadow:0 0 12px var(--green);
+    margin-right:7px;
 }
 
-.engine-status p{
-    font-size:11px;
+.engine-status small{
     color:var(--muted);
-    margin-top:5px;
+    display:block;
+    margin-top:6px;
 }
 
-/* MAIN */
+/* =========================================================
+   MAIN
+========================================================= */
 
 .main{
-    margin-left:255px;
-    width:calc(100% - 255px);
-    padding:25px 30px 60px;
+    margin-left:250px;
+    width:calc(100% - 250px);
+    min-height:100vh;
+    padding:25px;
 }
 
 .topbar{
-    height:64px;
+    height:55px;
     display:flex;
-    align-items:center;
     justify-content:space-between;
-    margin-bottom:25px;
+    align-items:center;
+    margin-bottom:22px;
 }
 
-.page-title h2{
+.page-title h1{
     font-size:25px;
     letter-spacing:-.7px;
 }
@@ -224,138 +260,79 @@ button{
 
 .top-actions{
     display:flex;
-    gap:10px;
+    gap:8px;
 }
 
-.btn{
+.icon-btn{
+    width:40px;
+    height:40px;
+    border-radius:12px;
     border:1px solid var(--border);
+    background:rgba(255,255,255,.035);
     color:white;
-    background:rgba(255,255,255,.05);
-    border-radius:11px;
-    padding:10px 15px;
-    transition:.25s;
+    transition:.2s;
 }
 
-.btn:hover{
-    transform:translateY(-2px);
-    border-color:rgba(255,255,255,.18);
+.icon-btn:hover{
+    background:rgba(255,255,255,.08);
 }
 
-.btn.primary{
-    background:linear-gradient(135deg,var(--primary),#5b78ff);
-    border:0;
-    box-shadow:0 10px 30px rgba(124,92,255,.25);
-}
+/* =========================================================
+   CARDS
+========================================================= */
 
-.btn.danger{
-    background:rgba(255,82,119,.1);
-    color:#ff7895;
-}
-
-.view{
-    display:none;
-    animation:viewIn .4s ease;
-}
-
-.view.active{
-    display:block;
-}
-
-@keyframes viewIn{
-    from{opacity:0;transform:translateY(10px)}
-    to{opacity:1;transform:none}
-}
-
-/* DASHBOARD */
-
-.hero{
+.card{
+    background:linear-gradient(145deg,rgba(18,25,43,.92),rgba(10,15,28,.92));
     border:1px solid var(--border);
-    border-radius:24px;
-    padding:27px;
-    background:
-        linear-gradient(135deg,rgba(124,92,255,.15),rgba(0,217,255,.045)),
-        var(--panel);
+    border-radius:18px;
     box-shadow:var(--shadow);
-    overflow:hidden;
-    position:relative;
 }
 
-.hero:after{
-    content:"";
-    position:absolute;
-    width:350px;
-    height:350px;
-    right:-150px;
-    top:-160px;
-    border-radius:50%;
-    background:rgba(0,217,255,.08);
-    filter:blur(5px);
-}
-
-.hero-content{
-    position:relative;
-    z-index:2;
-}
-
-.badge{
-    display:inline-flex;
+.card-header{
+    display:flex;
+    justify-content:space-between;
     align-items:center;
-    gap:7px;
-    padding:6px 10px;
-    border:1px solid rgba(124,92,255,.3);
-    border-radius:100px;
-    background:rgba(124,92,255,.08);
-    color:#b6aaff;
-    font-size:10px;
-    text-transform:uppercase;
-    letter-spacing:1.2px;
+    padding:18px 20px;
+    border-bottom:1px solid var(--border);
 }
 
-.hero h3{
-    font-size:34px;
-    margin:17px 0 8px;
-    max-width:700px;
-    letter-spacing:-1.3px;
+.card-title{
+    font-weight:800;
 }
 
-.hero h3 span{
-    background:linear-gradient(90deg,#fff,var(--secondary));
-    -webkit-background-clip:text;
-    color:transparent;
-}
-
-.hero p{
+.card-sub{
     color:var(--muted);
-    max-width:720px;
-    line-height:1.65;
-    font-size:13px;
+    font-size:11px;
+    margin-top:3px;
 }
+
+/* =========================================================
+   STATS
+========================================================= */
 
 .stats{
     display:grid;
     grid-template-columns:repeat(4,1fr);
     gap:14px;
-    margin-top:18px;
+    margin-bottom:16px;
 }
 
 .stat{
-    background:var(--panel);
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:19px;
+    padding:17px;
     position:relative;
     overflow:hidden;
 }
 
-.stat:after{
+.stat::after{
     content:"";
     position:absolute;
-    right:-25px;
-    bottom:-30px;
-    width:80px;
-    height:80px;
+    width:90px;
+    height:90px;
+    right:-30px;
+    top:-35px;
     border-radius:50%;
-    background:rgba(124,92,255,.07);
+    background:rgba(102,124,255,.12);
+    filter:blur(5px);
 }
 
 .stat-label{
@@ -365,37 +342,19 @@ button{
 
 .stat-value{
     font-size:28px;
-    font-weight:800;
+    font-weight:900;
     margin-top:7px;
 }
 
-.stat-sub{
-    color:#667087;
+.stat-change{
+    color:var(--green);
     font-size:10px;
-    margin-top:3px;
+    margin-top:5px;
 }
 
-/* TEST UPLOAD */
-
-.section{
-    margin-top:18px;
-}
-
-.section-head{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:12px;
-}
-
-.section-head h3{
-    font-size:16px;
-}
-
-.section-head span{
-    color:var(--muted);
-    font-size:11px;
-}
+/* =========================================================
+   UPLOAD AREA
+========================================================= */
 
 .upload-grid{
     display:grid;
@@ -403,596 +362,879 @@ button{
     gap:15px;
 }
 
-.drop{
-    min-height:215px;
-    border:1px dashed rgba(255,255,255,.16);
-    border-radius:19px;
-    background:rgba(255,255,255,.025);
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    align-items:center;
-    text-align:center;
+.upload-box{
+    min-height:230px;
     padding:25px;
-    transition:.25s;
+    border:1px dashed rgba(255,255,255,.14);
+    border-radius:16px;
+    margin:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
     position:relative;
     overflow:hidden;
+    transition:.25s;
 }
 
-.drop:hover,.drop.drag{
-    border-color:var(--secondary);
-    background:rgba(0,217,255,.04);
+.upload-box:hover,
+.upload-box.drag{
+    border-color:var(--cyan);
+    background:rgba(57,217,255,.035);
+    box-shadow:inset 0 0 50px rgba(57,217,255,.035);
 }
 
-.drop input{
-    display:none;
+.upload-icon{
+    width:55px;
+    height:55px;
+    display:grid;
+    place-items:center;
+    border-radius:17px;
+    background:rgba(102,124,255,.12);
+    font-size:25px;
+    margin:auto auto 12px;
 }
 
-.drop-icon{
-    font-size:34px;
-    margin-bottom:12px;
+.upload-title{
+    font-weight:800;
 }
 
-.drop h4{
-    font-size:14px;
-}
-
-.drop p{
+.upload-text{
     color:var(--muted);
     font-size:11px;
     margin:6px 0 15px;
 }
 
+.file-btn{
+    border:1px solid rgba(102,124,255,.35);
+    background:rgba(102,124,255,.12);
+    color:white;
+    padding:9px 14px;
+    border-radius:10px;
+}
+
 .file-name{
-    color:var(--secondary);
-    font-size:11px;
+    color:var(--cyan);
+    font-size:10px;
+    margin-top:10px;
+    min-height:14px;
+}
+
+.preview{
     max-width:100%;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-}
-
-.config{
-    display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    gap:12px;
-    margin-top:15px;
-}
-
-.field{
-    border:1px solid var(--border);
-    border-radius:14px;
-    background:var(--panel);
-    padding:13px;
-}
-
-.field label{
-    display:block;
-    color:var(--muted);
-    font-size:10px;
-    margin-bottom:7px;
-}
-
-.field select,.field input[type="range"]{
-    width:100%;
-}
-
-.field select{
-    background:#0e1320;
-    color:white;
-    border:1px solid var(--border);
-    padding:9px;
-    border-radius:9px;
-}
-
-.range-row{
-    display:flex;
-    justify-content:space-between;
-    font-size:10px;
-}
-
-.run-wrap{
-    margin-top:15px;
-    display:flex;
-    justify-content:flex-end;
-}
-
-.run-btn{
-    padding:13px 24px;
-    border:0;
-    border-radius:12px;
-    color:white;
-    font-weight:700;
-    background:linear-gradient(135deg,var(--primary),var(--secondary));
-    box-shadow:0 12px 35px rgba(80,100,255,.25);
-    transition:.25s;
-}
-
-.run-btn:hover{
-    transform:translateY(-3px);
-    box-shadow:0 18px 45px rgba(80,100,255,.38);
-}
-
-.run-btn:disabled{
-    opacity:.5;
-    cursor:not-allowed;
-    transform:none;
-}
-
-/* RESULT */
-
-.result{
+    max-height:160px;
+    border-radius:10px;
     display:none;
+    object-fit:contain;
 }
 
-.result.show{
-    display:block;
-}
+/* =========================================================
+   CONTROLS
+========================================================= */
 
-.result-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:15px;
-}
-
-.score{
-    width:145px;
-    height:145px;
-    border-radius:50%;
+.controls{
     display:grid;
-    place-items:center;
-    background:
-        radial-gradient(circle at center,#0c101a 58%,transparent 59%),
-        conic-gradient(var(--green) var(--score),rgba(255,255,255,.08) 0);
-}
-
-.score strong{
-    font-size:31px;
-}
-
-.score small{
-    display:block;
-    text-align:center;
-    color:var(--muted);
-    font-size:9px;
-    margin-top:-4px;
-}
-
-.result-grid{
-    display:grid;
-    grid-template-columns:1.6fr 1fr;
-    gap:15px;
-}
-
-.card{
-    border:1px solid var(--border);
-    background:var(--panel);
-    border-radius:19px;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
     padding:18px;
 }
 
-.card h3{
-    font-size:14px;
-    margin-bottom:15px;
+.control label{
+    color:var(--muted);
+    font-size:10px;
+    display:block;
+    margin-bottom:6px;
 }
 
-.metric-list{
+select,
+input[type="number"],
+input[type="text"]{
+    width:100%;
+    background:#080d19;
+    border:1px solid var(--border);
+    color:white;
+    border-radius:10px;
+    padding:10px;
+    outline:none;
+}
+
+input:focus,
+select:focus{
+    border-color:var(--cyan);
+}
+
+.range-wrap{
     display:flex;
-    flex-direction:column;
-    gap:13px;
+    align-items:center;
+    gap:8px;
+}
+
+input[type="range"]{
+    flex:1;
+    accent-color:var(--cyan);
+}
+
+.range-value{
+    width:45px;
+    text-align:right;
+    color:var(--cyan);
+    font-size:11px;
+}
+
+/* =========================================================
+   ANALYZE BUTTON
+========================================================= */
+
+.analyze-wrap{
+    padding:0 18px 18px;
+}
+
+.analyze-btn{
+    width:100%;
+    border:none;
+    color:white;
+    font-weight:900;
+    padding:15px;
+    border-radius:13px;
+    background:linear-gradient(100deg,#4d68ff,#a84dff);
+    box-shadow:0 10px 35px rgba(102,124,255,.25);
+    position:relative;
+    overflow:hidden;
+    transition:.25s;
+}
+
+.analyze-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 15px 45px rgba(102,124,255,.35);
+}
+
+.analyze-btn::after{
+    content:"";
+    position:absolute;
+    top:0;
+    left:-100%;
+    width:70%;
+    height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+    transform:skewX(-20deg);
+    animation:shine 3s infinite;
+}
+
+@keyframes shine{
+    0%,55%{left:-100%}
+    100%{left:150%}
+}
+
+/* =========================================================
+   ANALYSIS AREA
+========================================================= */
+
+.analysis-grid{
+    display:grid;
+    grid-template-columns:1.45fr .8fr;
+    gap:15px;
+    margin-top:16px;
+}
+
+.compare{
+    min-height:560px;
+}
+
+.compare-toolbar{
+    display:flex;
+    gap:5px;
+}
+
+.mode-btn{
+    padding:7px 10px;
+    font-size:10px;
+    border-radius:8px;
+    border:1px solid var(--border);
+    color:var(--muted);
+    background:rgba(255,255,255,.025);
+}
+
+.mode-btn.active{
+    color:white;
+    border-color:rgba(102,124,255,.4);
+    background:rgba(102,124,255,.14);
+}
+
+.canvas-wrap{
+    position:relative;
+    padding:18px;
+    min-height:450px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+        radial-gradient(circle at center,rgba(102,124,255,.04),transparent 55%);
+}
+
+#compareCanvas{
+    max-width:100%;
+    max-height:470px;
+    border-radius:10px;
+    box-shadow:0 15px 50px rgba(0,0,0,.5);
+    background:#03050a;
+}
+
+.canvas-empty{
+    position:absolute;
+    color:#46516a;
+    font-size:12px;
+}
+
+/* =========================================================
+   SCORE
+========================================================= */
+
+.score-card{
+    padding:22px;
+}
+
+.score-ring{
+    width:180px;
+    height:180px;
+    margin:10px auto 20px;
+    border-radius:50%;
+    display:grid;
+    place-items:center;
+    position:relative;
+    background:conic-gradient(var(--cyan) 0deg,rgba(255,255,255,.05) 0deg);
+}
+
+.score-ring::before{
+    content:"";
+    position:absolute;
+    inset:12px;
+    background:#0c1322;
+    border-radius:50%;
+}
+
+.score-inner{
+    position:relative;
+    text-align:center;
+}
+
+.score-number{
+    font-size:42px;
+    font-weight:1000;
+}
+
+.score-percent{
+    color:var(--muted);
+    font-size:10px;
+}
+
+.result-badge{
+    text-align:center;
+    padding:9px;
+    border-radius:10px;
+    font-weight:900;
+    font-size:12px;
+    background:rgba(74,222,128,.08);
+    color:var(--green);
+    border:1px solid rgba(74,222,128,.15);
+}
+
+.metrics{
+    margin-top:18px;
 }
 
 .metric{
-    display:grid;
-    grid-template-columns:125px 1fr 50px;
-    gap:10px;
-    align-items:center;
+    margin-bottom:14px;
 }
 
-.metric span{
+.metric-top{
+    display:flex;
+    justify-content:space-between;
+    font-size:10px;
+    margin-bottom:6px;
+}
+
+.metric-top span:first-child{
     color:var(--muted);
-    font-size:11px;
 }
 
-.bar{
-    height:7px;
-    background:rgba(255,255,255,.07);
-    border-radius:20px;
+.metric-bar{
+    height:6px;
+    background:rgba(255,255,255,.06);
+    border-radius:10px;
     overflow:hidden;
 }
 
-.bar i{
-    display:block;
+.metric-fill{
     height:100%;
     width:0;
-    border-radius:20px;
-    background:linear-gradient(90deg,var(--primary),var(--secondary));
+    border-radius:10px;
+    background:linear-gradient(90deg,var(--cyan),var(--blue));
     transition:width 1s ease;
 }
 
-.metric b{
-    text-align:right;
-    font-size:11px;
-}
-
-/* FINDINGS */
+/* =========================================================
+   FINDINGS
+========================================================= */
 
 .findings{
     margin-top:15px;
 }
 
 .finding{
+    padding:14px 16px;
     display:flex;
-    align-items:flex-start;
     gap:12px;
-    padding:13px 0;
-    border-bottom:1px solid rgba(255,255,255,.055);
+    border-bottom:1px solid var(--border);
+    animation:slideIn .4s both;
 }
 
 .finding:last-child{
     border-bottom:0;
 }
 
-.severity{
-    min-width:68px;
-    text-align:center;
-    padding:5px 7px;
-    border-radius:7px;
-    font-size:9px;
-    text-transform:uppercase;
+.finding-icon{
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    display:grid;
+    place-items:center;
+    background:rgba(255,82,104,.1);
+}
+
+.finding-body{
+    flex:1;
+}
+
+.finding-title{
+    font-size:12px;
     font-weight:800;
 }
 
-.severity.critical{
-    color:#ff7994;
-    background:rgba(255,82,119,.12);
-}
-
-.severity.warning{
-    color:#ffd477;
-    background:rgba(255,200,87,.11);
-}
-
-.severity.info{
-    color:#79b1ff;
-    background:rgba(94,156,255,.11);
-}
-
-.finding-content strong{
-    display:block;
-    font-size:11px;
-}
-
-.finding-content p{
-    color:var(--muted);
+.finding-desc{
     font-size:10px;
-    margin-top:4px;
+    color:var(--muted);
     line-height:1.5;
+    margin-top:4px;
 }
 
-/* IMAGE COMPARISON */
-
-.compare{
-    margin-top:15px;
+.severity{
+    font-size:8px;
+    font-weight:900;
+    padding:4px 7px;
+    border-radius:5px;
+    height:max-content;
 }
 
-.compare-toolbar{
-    display:flex;
-    gap:7px;
-    margin-bottom:10px;
+.sev-critical{
+    color:#ff8090;
+    background:rgba(255,82,104,.1);
 }
 
-.compare-toolbar button{
-    border:1px solid var(--border);
-    background:rgba(255,255,255,.035);
-    color:var(--muted);
-    border-radius:8px;
-    padding:7px 10px;
-    font-size:10px;
+.sev-warning{
+    color:#ffd966;
+    background:rgba(250,204,21,.08);
 }
 
-.compare-toolbar button.active{
-    color:white;
-    background:rgba(124,92,255,.18);
-    border-color:rgba(124,92,255,.4);
+.sev-info{
+    color:#6ee7ff;
+    background:rgba(57,217,255,.08);
 }
 
-.canvas-box{
-    position:relative;
-    width:100%;
-    min-height:350px;
-    background:#04060a;
-    border:1px solid var(--border);
-    border-radius:15px;
-    overflow:hidden;
-    display:grid;
-    place-items:center;
-}
-
-#compareCanvas{
-    max-width:100%;
-    max-height:650px;
-    object-fit:contain;
-}
-
-.empty-canvas{
-    color:#5f687b;
-    font-size:11px;
-}
-
-/* REPORTS */
-
-.report-table{
-    border:1px solid var(--border);
-    border-radius:17px;
-    overflow:hidden;
-    background:var(--panel);
-}
-
-.report-row{
-    display:grid;
-    grid-template-columns:1.3fr .8fr .7fr .8fr .5fr;
-    padding:14px 17px;
-    border-bottom:1px solid rgba(255,255,255,.055);
-    align-items:center;
-    font-size:11px;
-}
-
-.report-row:last-child{
-    border:0;
-}
-
-.report-row.header{
-    color:var(--muted);
-    background:rgba(255,255,255,.025);
-    font-size:9px;
-    text-transform:uppercase;
-    letter-spacing:.7px;
-}
-
-.status-pass{
+.no-findings{
+    padding:35px;
+    text-align:center;
     color:var(--green);
 }
 
-.status-fail{
-    color:var(--red);
+/* =========================================================
+   AI REACTION
+========================================================= */
+
+.reaction-section{
+    margin-top:15px;
 }
 
-/* ARCHITECTURE */
+.reaction-card{
+    position:relative;
+    overflow:hidden;
+    min-height:300px;
+}
 
-.arch-grid{
+.reaction-bg{
+    position:absolute;
+    inset:0;
+    background:
+        radial-gradient(circle at 15% 30%,rgba(102,124,255,.12),transparent 30%),
+        radial-gradient(circle at 80% 80%,rgba(189,85,255,.08),transparent 30%);
+}
+
+.reaction-content{
+    position:relative;
     display:grid;
-    grid-template-columns:repeat(3,1fr);
+    grid-template-columns:180px 1fr;
+    gap:20px;
+    align-items:center;
+    padding:25px;
+}
+
+.sticker{
+    width:150px;
+    height:150px;
+    border-radius:35px;
+    display:grid;
+    place-items:center;
+    font-size:80px;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.09);
+    box-shadow:0 20px 60px rgba(0,0,0,.35);
+    animation:stickerFloat 2.5s ease-in-out infinite;
+    transform-origin:center;
+}
+
+.sticker.bounce{
+    animation:stickerBounce .75s ease;
+}
+
+.sticker.shake{
+    animation:stickerShake .6s ease;
+}
+
+@keyframes stickerFloat{
+    0%,100%{transform:translateY(0) rotate(-2deg)}
+    50%{transform:translateY(-9px) rotate(2deg)}
+}
+
+@keyframes stickerBounce{
+    0%{transform:scale(.5) rotate(-20deg);opacity:0}
+    65%{transform:scale(1.15) rotate(8deg)}
+    100%{transform:scale(1) rotate(0);opacity:1}
+}
+
+@keyframes stickerShake{
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-12px) rotate(-5deg)}
+    40%{transform:translateX(12px) rotate(5deg)}
+    60%{transform:translateX(-8px)}
+    80%{transform:translateX(8px)}
+}
+
+.reaction-kicker{
+    color:var(--cyan);
+    text-transform:uppercase;
+    letter-spacing:2px;
+    font-size:9px;
+    font-weight:900;
+}
+
+.reaction-title{
+    font-size:27px;
+    font-weight:1000;
+    margin-top:8px;
+}
+
+.reaction-message{
+    color:#aeb7ca;
+    margin-top:8px;
+    line-height:1.6;
+    font-size:12px;
+}
+
+.reaction-type{
+    display:inline-flex;
+    margin-top:15px;
+    padding:7px 10px;
+    border:1px solid var(--border);
+    background:rgba(255,255,255,.035);
+    border-radius:8px;
+    font-size:9px;
+    color:#9da8bd;
+}
+
+/* =========================================================
+   SOUND BOX
+========================================================= */
+
+.sound-box{
+    margin-top:15px;
+    padding:18px;
+}
+
+.sound-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
     gap:15px;
 }
 
-.arch-card{
-    border:1px solid var(--border);
-    border-radius:18px;
-    padding:20px;
-    background:var(--panel);
-    transition:.3s;
+.sound-info{
+    display:flex;
+    align-items:center;
+    gap:12px;
 }
 
-.arch-card:hover{
-    transform:translateY(-4px);
-    border-color:rgba(124,92,255,.3);
-}
-
-.arch-icon{
+.sound-icon{
     width:42px;
     height:42px;
     border-radius:12px;
     display:grid;
     place-items:center;
-    background:rgba(124,92,255,.12);
-    font-size:20px;
-    margin-bottom:13px;
+    background:rgba(57,217,255,.08);
+    font-size:19px;
 }
 
-.arch-card h3{
-    font-size:14px;
+.sound-info strong{
+    font-size:12px;
 }
 
-.arch-card p{
+.sound-info small{
     color:var(--muted);
-    font-size:11px;
-    line-height:1.6;
-    margin-top:7px;
+    display:block;
+    margin-top:3px;
+    font-size:9px;
 }
 
-/* TOAST */
-
-.toast{
-    position:fixed;
-    z-index:100;
-    right:25px;
-    bottom:25px;
-    transform:translateY(100px);
-    opacity:0;
-    padding:13px 17px;
-    border:1px solid var(--border);
-    border-radius:12px;
-    background:#111727;
-    box-shadow:var(--shadow);
-    font-size:11px;
-    transition:.35s;
-}
-
-.toast.show{
-    transform:none;
-    opacity:1;
-}
-
-/* MODAL */
-
-.modal{
-    position:fixed;
-    z-index:90;
-    inset:0;
-    background:rgba(0,0,0,.7);
-    backdrop-filter:blur(12px);
-    display:none;
-    place-items:center;
-    padding:20px;
-}
-
-.modal.show{
-    display:grid;
-}
-
-.modal-box{
-    width:min(600px,100%);
-    background:#0d1220;
-    border:1px solid var(--border);
+.toggle{
+    width:48px;
+    height:26px;
     border-radius:20px;
-    padding:23px;
-    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+    background:#1a2030;
+    position:relative;
 }
 
-.modal-head{
+.toggle span{
+    position:absolute;
+    width:20px;
+    height:20px;
+    top:2px;
+    left:3px;
+    border-radius:50%;
+    background:#69758e;
+    transition:.2s;
+}
+
+.toggle.on{
+    background:rgba(57,217,255,.18);
+    border-color:rgba(57,217,255,.3);
+}
+
+.toggle.on span{
+    left:23px;
+    background:var(--cyan);
+    box-shadow:0 0 12px rgba(57,217,255,.6);
+}
+
+.volume-row{
     display:flex;
-    justify-content:space-between;
     align-items:center;
-    margin-bottom:15px;
+    gap:10px;
+    margin-top:15px;
 }
 
-.modal-close{
-    border:0;
-    background:transparent;
-    color:var(--muted);
-    font-size:20px;
+.volume-row span{
+    font-size:12px;
 }
 
-/* LOADING */
-
-.loader{
-    position:fixed;
-    inset:0;
-    z-index:200;
-    display:none;
-    place-items:center;
-    background:rgba(4,6,11,.86);
-    backdrop-filter:blur(15px);
+.volume-row input{
+    flex:1;
 }
 
-.loader.show{
-    display:grid;
+/* =========================================================
+   GIF BOX
+========================================================= */
+
+.gif-box{
+    margin-top:15px;
+    padding:18px;
 }
 
-.loader-box{
+.gif-upload{
+    border:1px dashed var(--border);
+    padding:16px;
+    border-radius:12px;
+    margin-top:12px;
     text-align:center;
 }
 
-.spinner{
-    width:55px;
-    height:55px;
-    margin:auto;
+.gif-upload input{
+    display:none;
+}
+
+.gif-preview{
+    width:100%;
+    max-height:180px;
+    object-fit:contain;
+    border-radius:12px;
+    display:none;
+    margin-top:10px;
+}
+
+/* =========================================================
+   PROGRESS
+========================================================= */
+
+.progress-overlay{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:rgba(3,5,12,.84);
+    backdrop-filter:blur(18px);
+    display:none;
+    place-items:center;
+}
+
+.progress-overlay.show{
+    display:grid;
+}
+
+.progress-box{
+    width:min(500px,90vw);
+    text-align:center;
+    padding:35px;
+    border-radius:24px;
+    border:1px solid var(--border);
+    background:#0b1120;
+    box-shadow:0 40px 100px rgba(0,0,0,.6);
+}
+
+.ai-orb{
+    width:90px;
+    height:90px;
     border-radius:50%;
-    border:3px solid rgba(255,255,255,.08);
-    border-top-color:var(--secondary);
-    animation:spin 1s linear infinite;
+    margin:0 auto 22px;
+    background:radial-gradient(circle at 35% 30%,#fff,#64dfff 18%,#5b68ff 55%,#1b1247);
+    box-shadow:0 0 50px rgba(57,217,255,.4);
+    animation:orbPulse 1.2s infinite;
 }
 
-.loader h3{
-    margin-top:18px;
-    font-size:14px;
+@keyframes orbPulse{
+    0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(57,217,255,.3)}
+    50%{transform:scale(1.1);box-shadow:0 0 75px rgba(102,124,255,.55)}
 }
 
-.loader p{
+.progress-title{
+    font-size:20px;
+    font-weight:900;
+}
+
+.progress-message{
+    color:var(--muted);
+    font-size:11px;
+    margin-top:8px;
+    min-height:18px;
+}
+
+.progress-track{
+    margin-top:20px;
+    height:7px;
+    background:rgba(255,255,255,.06);
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-fill{
+    width:0;
+    height:100%;
+    background:linear-gradient(90deg,var(--cyan),var(--purple));
+    transition:width .25s;
+}
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+.toast-container{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:200;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.toast{
+    width:310px;
+    padding:14px;
+    border-radius:13px;
+    background:#101827;
+    border:1px solid var(--border);
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+    animation:toastIn .35s ease;
+}
+
+.toast-title{
+    font-weight:900;
+    font-size:11px;
+}
+
+.toast-msg{
     color:var(--muted);
     font-size:10px;
-    margin-top:5px;
+    margin-top:4px;
 }
 
-@keyframes spin{
-    to{transform:rotate(360deg)}
+@keyframes toastIn{
+    from{transform:translateX(30px);opacity:0}
+    to{transform:translateX(0);opacity:1}
 }
 
-/* MOBILE */
+@keyframes slideIn{
+    from{transform:translateY(8px);opacity:0}
+    to{transform:translateY(0);opacity:1}
+}
 
-@media(max-width:1000px){
-    .sidebar{
-        width:75px;
-        padding:18px 10px;
+/* =========================================================
+   CONFETTI
+========================================================= */
+
+.confetti{
+    position:fixed;
+    width:7px;
+    height:12px;
+    z-index:150;
+    pointer-events:none;
+    top:-20px;
+    animation:confettiFall linear forwards;
+}
+
+@keyframes confettiFall{
+    to{
+        transform:translate3d(var(--x),110vh,0) rotate(720deg);
+        opacity:0;
     }
+}
 
-    .brand h1,
-    .brand small,
-    .nav-title,
-    .nav button span,
-    .engine-status{
-        display:none;
-    }
+/* =========================================================
+   CRITICAL SHAKE
+========================================================= */
 
-    .brand{
-        justify-content:center;
-        padding:5px 0 25px;
-    }
+body.critical{
+    animation:screenShake .5s ease;
+}
 
-    .nav button{
-        justify-content:center;
-    }
+@keyframes screenShake{
+    0%,100%{transform:translateX(0)}
+    20%{transform:translateX(-5px)}
+    40%{transform:translateX(5px)}
+    60%{transform:translateX(-3px)}
+    80%{transform:translateX(3px)}
+}
 
-    .main{
-        margin-left:75px;
-        width:calc(100% - 75px);
-        padding:20px;
-    }
+/* =========================================================
+   HISTORY
+========================================================= */
 
+.history{
+    margin-top:15px;
+}
+
+.history-row{
+    display:grid;
+    grid-template-columns:1.5fr .8fr .7fr .7fr;
+    gap:10px;
+    padding:13px 16px;
+    border-bottom:1px solid var(--border);
+    font-size:10px;
+}
+
+.history-row:last-child{
+    border-bottom:0;
+}
+
+.history-head{
+    color:var(--muted);
+    font-size:9px;
+}
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width:1050px){
     .stats{
         grid-template-columns:repeat(2,1fr);
     }
 
-    .result-grid{
-        grid-template-columns:1fr;
-    }
-
-    .arch-grid{
+    .analysis-grid{
         grid-template-columns:1fr;
     }
 }
 
-@media(max-width:700px){
-    .main{
-        padding:15px;
-    }
-
-    .topbar{
+@media(max-width:800px){
+    .sidebar{
+        position:static;
+        width:100%;
         height:auto;
-        gap:15px;
-        align-items:flex-start;
+        border-right:0;
+        border-bottom:1px solid var(--border);
     }
 
-    .top-actions{
+    .app{
+        display:block;
+    }
+
+    .sidebar-bottom{
         display:none;
     }
 
-    .hero h3{
-        font-size:25px;
+    .main{
+        margin-left:0;
+        width:100%;
+        padding:15px;
     }
 
-    .upload-grid,
-    .config{
+    .nav{
+        display:flex;
+        overflow-x:auto;
+    }
+
+    .nav-title{
+        display:none;
+    }
+
+    .nav-item{
+        min-width:max-content;
+    }
+
+    .upload-grid{
         grid-template-columns:1fr;
     }
 
+    .controls{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .reaction-content{
+        grid-template-columns:1fr;
+        text-align:center;
+    }
+
+    .sticker{
+        margin:auto;
+    }
+}
+
+@media(max-width:550px){
     .stats{
         grid-template-columns:1fr 1fr;
     }
 
-    .metric{
-        grid-template-columns:100px 1fr 40px;
+    .controls{
+        grid-template-columns:1fr;
     }
 
-    .report-row{
-        grid-template-columns:1.2fr .7fr .6fr;
+    .topbar{
+        align-items:flex-start;
+        height:auto;
     }
 
-    .report-row>*:nth-child(4),
-    .report-row>*:nth-child(5){
-        display:none;
+    .reaction-title{
+        font-size:21px;
+    }
+
+    .history-row{
+        grid-template-columns:1fr 1fr;
     }
 }
 </style>
@@ -1000,472 +1242,572 @@ button{
 
 <body>
 
+<div class="bg">
+    <div class="bg-grid"></div>
+    <div class="orb one"></div>
+    <div class="orb two"></div>
+    <div class="orb three"></div>
+</div>
+
 <div class="app">
 
-<!-- SIDEBAR -->
+<!-- =======================================================
+     SIDEBAR
+======================================================= -->
 
 <aside class="sidebar">
 
-    <div class="brand">
-        <div class="logo">V</div>
-        <div>
-            <h1>Vision<span>Guard</span></h1>
-            <small>AI Visual QA</small>
+    <div class="logo">
+        <div class="logo-icon">👁️</div>
+        <div class="logo-text">
+            VisionGuard AI
+            <small>VISUAL QA COMMAND CENTER</small>
         </div>
     </div>
 
-    <div class="nav-title">Workspace</div>
+    <div class="nav-title">WORKSPACE</div>
 
-    <nav class="nav">
+    <div class="nav">
+        <div class="nav-item active">
+            <span class="nav-icon">◈</span>
+            Dashboard
+        </div>
 
-        <button class="active" data-view="dashboard">
-            <div class="nav-icon">◈</div>
-            <span>Dashboard</span>
-        </button>
+        <div class="nav-item">
+            <span class="nav-icon">🧪</span>
+            Regression Lab
+        </div>
 
-        <button data-view="lab">
-            <div class="nav-icon">⌬</div>
-            <span>Visual Test Lab</span>
-        </button>
+        <div class="nav-item">
+            <span class="nav-icon">📊</span>
+            Reports
+        </div>
 
-        <button data-view="reports">
-            <div class="nav-icon">▤</div>
-            <span>Reports</span>
-        </button>
+        <div class="nav-item">
+            <span class="nav-icon">🤖</span>
+            AI Engine
+        </div>
 
-        <button data-view="engine">
-            <div class="nav-icon">◉</div>
-            <span>AI Engine</span>
-        </button>
-
-        <button data-view="settings">
-            <div class="nav-icon">⚙</div>
-            <span>Settings</span>
-        </button>
-
-    </nav>
+        <div class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            Settings
+        </div>
+    </div>
 
     <div class="sidebar-bottom">
         <div class="engine-status">
-            <div>
-                <span class="dot"></span>
-                <strong style="font-size:11px">Engine Online</strong>
-            </div>
-            <p>Perceptual analysis ready</p>
+            <span class="status-dot"></span>
+            Engine Online
+            <small>Perceptual Vision Engine v2.7</small>
         </div>
     </div>
 
 </aside>
 
-<!-- MAIN -->
+<!-- =======================================================
+     MAIN
+======================================================= -->
 
 <main class="main">
 
-<header class="topbar">
+    <div class="topbar">
 
-    <div class="page-title">
-        <h2 id="pageTitle">Visual Quality Command Center</h2>
-        <p id="pageSubtitle">AI-driven visual regression monitoring</p>
-    </div>
+        <div class="page-title">
+            <h1>Visual Regression Command Center</h1>
+            <p>Detect subtle UI breaks before your users do.</p>
+        </div>
 
-    <div class="top-actions">
-        <button class="btn" onclick="clearAll()">Reset</button>
-        <button class="btn primary" onclick="openRun()">+ New Test</button>
-    </div>
-
-</header>
-
-
-<!-- DASHBOARD -->
-
-<section class="view active" id="dashboard">
-
-    <div class="hero">
-
-        <div class="hero-content">
-
-            <div class="badge">
-                ● AI VISUAL REGRESSION ENGINE
-            </div>
-
-            <h3>
-                Detect UI bugs before your users
-                <span>see them.</span>
-            </h3>
-
-            <p>
-                VisionGuard analyzes screenshots using perceptual structure,
-                edge geometry, color distribution, layout consistency and
-                OCR-assisted text inspection. Dynamic visual changes can be
-                tolerated while meaningful layout regressions are surfaced.
-            </p>
-
-            <div style="margin-top:19px">
-                <button class="btn primary" onclick="openRun()">
-                    Run Visual Test →
-                </button>
-            </div>
-
+        <div class="top-actions">
+            <button class="icon-btn" onclick="toggleSound()" title="Sound">🔊</button>
+            <button class="icon-btn" onclick="generateDemo()" title="Demo">⚡</button>
         </div>
 
     </div>
 
+<!-- =======================================================
+     STATS
+======================================================= -->
 
-    <div class="stats">
+    <section class="stats">
 
-        <div class="stat">
-            <div class="stat-label">Total Tests</div>
-            <div class="stat-value" id="statTests">0</div>
-            <div class="stat-sub">local test history</div>
+        <div class="card stat">
+            <div class="stat-label">TOTAL TESTS</div>
+            <div class="stat-value" id="totalTests">0</div>
+            <div class="stat-change">↑ Local history</div>
         </div>
 
-        <div class="stat">
-            <div class="stat-label">Passed</div>
-            <div class="stat-value" id="statPassed">0</div>
-            <div class="stat-sub">stable builds</div>
+        <div class="card stat">
+            <div class="stat-label">PASSED</div>
+            <div class="stat-value" id="passedTests">0</div>
+            <div class="stat-change">Stable builds</div>
         </div>
 
-        <div class="stat">
-            <div class="stat-label">Regressions</div>
-            <div class="stat-value" id="statFailed">0</div>
-            <div class="stat-sub">issues detected</div>
+        <div class="card stat">
+            <div class="stat-label">REGRESSIONS</div>
+            <div class="stat-value" id="regressionTests">0</div>
+            <div class="stat-change">Issues detected</div>
         </div>
 
-        <div class="stat">
-            <div class="stat-label">Avg. Similarity</div>
-            <div class="stat-value" id="statSimilarity">—</div>
-            <div class="stat-sub">perceptual score</div>
+        <div class="card stat">
+            <div class="stat-label">AVG SIMILARITY</div>
+            <div class="stat-value" id="avgScore">—</div>
+            <div class="stat-change">Perceptual score</div>
         </div>
 
-    </div>
+    </section>
 
+<!-- =======================================================
+     UPLOAD
+======================================================= -->
 
-    <div class="section">
+<section class="card">
 
-        <div class="section-head">
-            <h3>Detection Pipeline</h3>
-            <span>How VisionGuard thinks</span>
-        </div>
-
-        <div class="arch-grid">
-
-            <div class="arch-card">
-                <div class="arch-icon">👁</div>
-                <h3>Visual Perception</h3>
-                <p>
-                    Compares structural regions instead of relying only on
-                    raw pixel equality.
-                </p>
+    <div class="card-header">
+        <div>
+            <div class="card-title">Build Comparison</div>
+            <div class="card-sub">
+                Upload baseline and current build screenshots
             </div>
-
-            <div class="arch-card">
-                <div class="arch-icon">📐</div>
-                <h3>Layout Intelligence</h3>
-                <p>
-                    Detects shifts in alignment, spacing, dimensions,
-                    grid structures and component boundaries.
-                </p>
-            </div>
-
-            <div class="arch-card">
-                <div class="arch-icon">🔤</div>
-                <h3>Text Intelligence</h3>
-                <p>
-                    OCR-assisted inspection identifies suspicious text
-                    changes and possible clipping or overflow.
-                </p>
-            </div>
-
         </div>
 
-    </div>
-
-</section>
-
-
-<!-- LAB -->
-
-<section class="view" id="lab">
-
-    <div class="section-head">
-        <h3>Visual Test Laboratory</h3>
-        <span>Baseline → Candidate → Intelligence</span>
+        <div style="font-size:18px">🔍</div>
     </div>
 
     <div class="upload-grid">
 
-        <div class="drop" id="baselineDrop">
+        <!-- BASELINE -->
 
-            <div class="drop-icon">🧬</div>
+        <div>
 
-            <h4>Baseline Screenshot</h4>
+            <div class="upload-box"
+                 id="baselineDrop"
+                 ondragover="dragOver(event,this)"
+                 ondragleave="dragLeave(this)"
+                 ondrop="dropImage(event,'baseline')">
 
-            <p>
-                Upload the approved design or previous stable build.
-            </p>
+                <div id="baselineEmpty">
 
-            <label class="btn" for="baselineInput">
-                Choose Baseline
-            </label>
+                    <div class="upload-icon">🖼️</div>
+
+                    <div class="upload-title">
+                        Baseline Build
+                    </div>
+
+                    <div class="upload-text">
+                        Your approved reference screenshot
+                    </div>
+
+                    <button class="file-btn"
+                            onclick="baselineInput.click()">
+                        Choose Screenshot
+                    </button>
+
+                    <div class="file-name" id="baselineName"></div>
+
+                </div>
+
+                <img id="baselinePreview"
+                     class="preview">
+
+            </div>
 
             <input
                 id="baselineInput"
                 type="file"
                 accept="image/*"
-            >
-
-            <div class="file-name" id="baselineName">
-                No file selected
-            </div>
+                hidden
+                onchange="loadImage(this,'baseline')">
 
         </div>
 
+        <!-- CURRENT -->
 
-        <div class="drop" id="currentDrop">
+        <div>
 
-            <div class="drop-icon">⚡</div>
+            <div class="upload-box"
+                 id="currentDrop"
+                 ondragover="dragOver(event,this)"
+                 ondragleave="dragLeave(this)"
+                 ondrop="dropImage(event,'current')">
 
-            <h4>Current Build Screenshot</h4>
+                <div id="currentEmpty">
 
-            <p>
-                Upload the latest build screenshot.
-            </p>
+                    <div class="upload-icon">🚀</div>
 
-            <label class="btn" for="currentInput">
-                Choose Current
-            </label>
+                    <div class="upload-title">
+                        Current Build
+                    </div>
+
+                    <div class="upload-text">
+                        Screenshot from today's build
+                    </div>
+
+                    <button class="file-btn"
+                            onclick="currentInput.click()">
+                        Choose Screenshot
+                    </button>
+
+                    <div class="file-name" id="currentName"></div>
+
+                </div>
+
+                <img id="currentPreview"
+                     class="preview">
+
+            </div>
 
             <input
                 id="currentInput"
                 type="file"
                 accept="image/*"
-            >
-
-            <div class="file-name" id="currentName">
-                No file selected
-            </div>
+                hidden
+                onchange="loadImage(this,'current')">
 
         </div>
 
     </div>
 
+<!-- CONTROLS -->
 
-    <div class="config">
+    <div class="controls">
 
-        <div class="field">
-
-            <label>Viewport</label>
+        <div class="control">
+            <label>VIEWPORT</label>
 
             <select id="viewport">
-                <option value="desktop">Desktop — 1440×900</option>
-                <option value="laptop">Laptop — 1280×800</option>
-                <option value="tablet">Tablet — 768×1024</option>
-                <option value="mobile">Mobile — 390×844</option>
-                <option value="custom">Auto Detect</option>
+                <option>Desktop 1920×1080</option>
+                <option>Laptop 1440×900</option>
+                <option>Tablet 1024×768</option>
+                <option>Mobile 390×844</option>
+                <option>Custom</option>
             </select>
-
         </div>
 
+        <div class="control">
+            <label>DYNAMIC CONTENT TOLERANCE</label>
 
-        <div class="field">
+            <div class="range-wrap">
+                <input
+                    id="tolerance"
+                    type="range"
+                    min="0"
+                    max="30"
+                    value="10"
+                    oninput="toleranceValue.textContent=this.value+'%'">
 
-            <label>Dynamic Content Tolerance</label>
-
-            <div class="range-row">
-                <span>Strict</span>
-                <b id="toleranceText">18%</b>
-                <span>Relaxed</span>
+                <div class="range-value" id="toleranceValue">
+                    10%
+                </div>
             </div>
-
-            <input
-                id="tolerance"
-                type="range"
-                min="0"
-                max="50"
-                value="18"
-                oninput="toleranceText.textContent=this.value+'%'"
-            >
-
         </div>
 
+        <div class="control">
+            <label>REGRESSION THRESHOLD</label>
 
-        <div class="field">
+            <div class="range-wrap">
+                <input
+                    id="threshold"
+                    type="range"
+                    min="60"
+                    max="99"
+                    value="90"
+                    oninput="thresholdValue.textContent=this.value+'%'">
 
-            <label>Regression Threshold</label>
+                <div class="range-value" id="thresholdValue">
+                    90%
+                </div>
+            </div>
+        </div>
 
-            <select id="threshold">
-                <option value="95">95 — Very strict</option>
-                <option value="90" selected>90 — Recommended</option>
-                <option value="85">85 — Balanced</option>
-                <option value="75">75 — Relaxed</option>
+        <div class="control">
+            <label>COMPARISON MODE</label>
+
+            <select id="algorithm">
+                <option value="balanced">Balanced Vision</option>
+                <option value="strict">Strict Pixel Audit</option>
+                <option value="semantic">Semantic Tolerance</option>
             </select>
-
         </div>
 
     </div>
 
+    <div class="analyze-wrap">
 
-    <div class="run-wrap">
+        <button class="analyze-btn"
+                onclick="runAnalysis()">
 
-        <button
-            class="run-btn"
-            id="runBtn"
-            onclick="runAnalysis()"
-            disabled
-        >
-            🧠 Analyze Build
+            🧠 RUN AI VISUAL REGRESSION ANALYSIS
+
         </button>
 
     </div>
 
+</section>
 
-    <div class="result" id="result">
+<!-- =======================================================
+     ANALYSIS
+======================================================= -->
 
-        <div class="section-head" style="margin-top:25px">
-            <h3>Analysis Result</h3>
-            <span id="resultTime"></span>
-        </div>
+<div class="analysis-grid">
 
+    <section class="card compare">
 
-        <div class="result-grid">
+        <div class="card-header">
 
-            <div class="card">
-
-                <h3>Perceptual Quality</h3>
-
-                <div class="metric-list">
-
-                    <div class="metric">
-                        <span>Structure</span>
-                        <div class="bar">
-                            <i id="structureBar"></i>
-                        </div>
-                        <b id="structureScore">—</b>
-                    </div>
-
-                    <div class="metric">
-                        <span>Geometry</span>
-                        <div class="bar">
-                            <i id="geometryBar"></i>
-                        </div>
-                        <b id="geometryScore">—</b>
-                    </div>
-
-                    <div class="metric">
-                        <span>Color</span>
-                        <div class="bar">
-                            <i id="colorBar"></i>
-                        </div>
-                        <b id="colorScore">—</b>
-                    </div>
-
-                    <div class="metric">
-                        <span>Edge Stability</span>
-                        <div class="bar">
-                            <i id="edgeBar"></i>
-                        </div>
-                        <b id="edgeScore">—</b>
-                    </div>
-
-                    <div class="metric">
-                        <span>Content Stability</span>
-                        <div class="bar">
-                            <i id="contentBar"></i>
-                        </div>
-                        <b id="contentScore">—</b>
-                    </div>
-
+            <div>
+                <div class="card-title">
+                    Visual Comparison
                 </div>
 
-            </div>
-
-
-            <div class="card">
-
-                <h3>Regression Score</h3>
-
-                <div style="display:grid;place-items:center">
-
-                    <div class="score" id="scoreRing">
-                        <div>
-                            <strong id="overallScore">—</strong>
-                            <small>SIMILARITY</small>
-                        </div>
-                    </div>
-
-                    <div
-                        id="decision"
-                        style="
-                        margin-top:13px;
-                        font-size:12px;
-                        font-weight:800;
-                        "
-                    >
-                        Awaiting analysis
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="card findings">
-
-            <h3>AI Findings</h3>
-
-            <div id="findingsList">
-                <div style="color:var(--muted);font-size:11px">
-                    No findings yet.
+                <div class="card-sub">
+                    Difference mapping & structural analysis
                 </div>
             </div>
-
-        </div>
-
-
-        <div class="card compare">
-
-            <h3>Visual Evidence</h3>
 
             <div class="compare-toolbar">
 
                 <button
-                    class="active"
-                    onclick="setCompareMode('overlay',this)"
-                >
+                    class="mode-btn active"
+                    onclick="setMode('overlay',this)">
                     Overlay
                 </button>
 
                 <button
-                    onclick="setCompareMode('baseline',this)"
-                >
+                    class="mode-btn"
+                    onclick="setMode('baseline',this)">
                     Baseline
                 </button>
 
                 <button
-                    onclick="setCompareMode('current',this)"
-                >
+                    class="mode-btn"
+                    onclick="setMode('current',this)">
                     Current
                 </button>
 
                 <button
-                    onclick="setCompareMode('diff',this)"
-                >
+                    class="mode-btn"
+                    onclick="setMode('heatmap',this)">
                     Heatmap
                 </button>
 
             </div>
 
-            <div class="canvas-box">
+        </div>
 
-                <canvas id="compareCanvas"></canvas>
+        <div class="canvas-wrap">
+
+            <div
+                class="canvas-empty"
+                id="canvasEmpty">
+                Upload both screenshots to begin
+            </div>
+
+            <canvas id="compareCanvas"></canvas>
+
+        </div>
+
+    </section>
+
+<!-- SCORE -->
+
+    <section class="card score-card">
+
+        <div class="card-title">
+            AI Confidence
+        </div>
+
+        <div class="card-sub">
+            Perceptual similarity score
+        </div>
+
+        <div class="score-ring" id="scoreRing">
+
+            <div class="score-inner">
 
                 <div
-                    class="empty-canvas"
-                    id="emptyCanvas"
-                >
-                    Visual evidence will appear here.
+                    class="score-number"
+                    id="scoreNumber">
+                    —
+                </div>
+
+                <div class="score-percent">
+                    SIMILARITY
+                </div>
+
+            </div>
+
+        </div>
+
+        <div
+            class="result-badge"
+            id="resultBadge">
+            WAITING FOR ANALYSIS
+        </div>
+
+        <div class="metrics">
+
+            <div class="metric">
+
+                <div class="metric-top">
+                    <span>Structural Match</span>
+                    <span id="structuralText">—</span>
+                </div>
+
+                <div class="metric-bar">
+                    <div
+                        class="metric-fill"
+                        id="structuralBar">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="metric">
+
+                <div class="metric-top">
+                    <span>Geometry Stability</span>
+                    <span id="geometryText">—</span>
+                </div>
+
+                <div class="metric-bar">
+                    <div
+                        class="metric-fill"
+                        id="geometryBar">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="metric">
+
+                <div class="metric-top">
+                    <span>Color Consistency</span>
+                    <span id="colorText">—</span>
+                </div>
+
+                <div class="metric-bar">
+                    <div
+                        class="metric-fill"
+                        id="colorBar">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="metric">
+
+                <div class="metric-top">
+                    <span>Edge Stability</span>
+                    <span id="edgeText">—</span>
+                </div>
+
+                <div class="metric-bar">
+                    <div
+                        class="metric-fill"
+                        id="edgeBar">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="metric">
+
+                <div class="metric-top">
+                    <span>Content Stability</span>
+                    <span id="contentText">—</span>
+                </div>
+
+                <div class="metric-bar">
+                    <div
+                        class="metric-fill"
+                        id="contentBar">
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+<!-- =======================================================
+     FINDINGS
+======================================================= -->
+
+<section class="card findings">
+
+    <div class="card-header">
+
+        <div>
+            <div class="card-title">
+                Detected Findings
+            </div>
+
+            <div class="card-sub">
+                AI-ranked visual anomalies
+            </div>
+        </div>
+
+        <div id="findingCount">
+            0 issues
+        </div>
+
+    </div>
+
+    <div id="findingsList">
+
+        <div class="no-findings"
+             style="color:#647089">
+            No analysis performed yet.
+        </div>
+
+    </div>
+
+</section>
+
+<!-- =======================================================
+     REACTION
+======================================================= -->
+
+<section class="reaction-section">
+
+    <div class="card reaction-card">
+
+        <div class="reaction-bg"></div>
+
+        <div class="reaction-content">
+
+            <div
+                class="sticker"
+                id="sticker">
+                🤖
+            </div>
+
+            <div>
+
+                <div class="reaction-kicker">
+                    AI REACTION ENGINE
+                </div>
+
+                <div
+                    class="reaction-title"
+                    id="reactionTitle">
+                    Upload a build and let me judge it 👀
+                </div>
+
+                <div
+                    class="reaction-message"
+                    id="reactionMessage">
+                    I will inspect the pixels, interrogate the layout
+                    and hunt for suspicious UI behavior.
+                </div>
+
+                <div
+                    class="reaction-type"
+                    id="reactionType">
+                    Waiting for evidence...
                 </div>
 
             </div>
@@ -1476,594 +1818,652 @@ button{
 
 </section>
 
+<!-- =======================================================
+     SOUND BOX
+======================================================= -->
 
-<!-- REPORTS -->
+<section class="card sound-box">
 
-<section class="view" id="reports">
+    <div class="sound-row">
 
-    <div class="section-head">
-        <h3>Regression History</h3>
-        <button class="btn" onclick="exportReports()">
+        <div class="sound-info">
+
+            <div class="sound-icon">
+                🔊
+            </div>
+
+            <div>
+                <strong>AI Reaction Sound Box</strong>
+                <small>
+                    Tiny sound effects for your QA command center
+                </small>
+            </div>
+
+        </div>
+
+        <button
+            class="toggle on"
+            id="soundToggle"
+            onclick="toggleSound()">
+
+            <span></span>
+
+        </button>
+
+    </div>
+
+    <div class="volume-row">
+
+        <span>🔈</span>
+
+        <input
+            id="volume"
+            type="range"
+            min="0"
+            max="100"
+            value="55"
+            oninput="volumeText.textContent=this.value+'%'">
+
+        <span id="volumeText">55%</span>
+
+        <button
+            class="file-btn"
+            onclick="testSound()">
+            Test
+        </button>
+
+    </div>
+
+</section>
+
+<!-- =======================================================
+     CUSTOM GIF
+======================================================= -->
+
+<section class="card gif-box">
+
+    <div class="card-title">
+        🎬 Custom Reaction GIF
+    </div>
+
+    <div class="card-sub">
+        Optional — upload your own funny GIF for the AI reaction.
+    </div>
+
+    <div class="gif-upload">
+
+        <label
+            for="gifInput"
+            class="file-btn">
+            Upload GIF
+        </label>
+
+        <input
+            id="gifInput"
+            type="file"
+            accept="image/gif,image/*"
+            onchange="loadCustomGif(this)">
+
+        <div
+            id="gifName"
+            style="font-size:10px;color:#68748d;margin-top:8px">
+            No custom GIF selected
+        </div>
+
+        <img
+            id="customGif"
+            class="gif-preview">
+
+    </div>
+
+</section>
+
+<!-- =======================================================
+     HISTORY
+======================================================= -->
+
+<section class="card history">
+
+    <div class="card-header">
+
+        <div>
+            <div class="card-title">
+                Recent Tests
+            </div>
+
+            <div class="card-sub">
+                Stored locally in your browser
+            </div>
+        </div>
+
+        <button
+            class="mode-btn"
+            onclick="exportReport()">
             Export JSON
         </button>
-    </div>
-
-    <div class="report-table">
-
-        <div class="report-row header">
-            <div>Test</div>
-            <div>Viewport</div>
-            <div>Score</div>
-            <div>Status</div>
-            <div>Date</div>
-        </div>
-
-        <div id="reportsList"></div>
 
     </div>
 
-</section>
-
-
-<!-- AI ENGINE -->
-
-<section class="view" id="engine">
-
-    <div class="section-head">
-        <h3>AI Detection Engine</h3>
-        <span>Local browser intelligence</span>
+    <div class="history-row history-head">
+        <div>TEST</div>
+        <div>SCORE</div>
+        <div>STATUS</div>
+        <div>ISSUES</div>
     </div>
 
-    <div class="arch-grid">
-
-        <div class="arch-card">
-            <div class="arch-icon">🧠</div>
-            <h3>Perceptual Similarity</h3>
-            <p>
-                Structural similarity evaluates whether the candidate
-                visually behaves like the approved baseline.
-            </p>
-        </div>
-
-        <div class="arch-card">
-            <div class="arch-icon">📊</div>
-            <h3>Regional Analysis</h3>
-            <p>
-                The image is divided into regions to prevent a small
-                localized regression from being hidden by a large page.
-            </p>
-        </div>
-
-        <div class="arch-card">
-            <div class="arch-icon">〽</div>
-            <h3>Edge Intelligence</h3>
-            <p>
-                Edge maps expose broken borders, shifted cards,
-                missing separators and unexpected component geometry.
-            </p>
-        </div>
-
-        <div class="arch-card">
-            <div class="arch-icon">🎨</div>
-            <h3>Color Distribution</h3>
-            <p>
-                Histogram comparison helps distinguish structural changes
-                from harmless text/data differences.
-            </p>
-        </div>
-
-        <div class="arch-card">
-            <div class="arch-icon">🔤</div>
-            <h3>OCR Layer</h3>
-            <p>
-                Tesseract.js can inspect visible text regions and support
-                text stability and overflow heuristics.
-            </p>
-        </div>
-
-        <div class="arch-card">
-            <div class="arch-icon">🛡</div>
-            <h3>Dynamic Tolerance</h3>
-            <p>
-                Configurable tolerance reduces false positives caused by
-                timestamps, changing numbers and other dynamic content.
-            </p>
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- SETTINGS -->
-
-<section class="view" id="settings">
-
-    <div class="section-head">
-        <h3>Project Settings</h3>
-        <span>Stored locally in this browser</span>
-    </div>
-
-    <div class="card">
-
-        <h3>Detection Preferences</h3>
-
-        <div class="config">
-
-            <div class="field">
-                <label>Project Name</label>
-                <input
-                    id="projectName"
-                    value="VisionGuard Demo"
-                    style="
-                    width:100%;
-                    background:#0e1320;
-                    border:1px solid var(--border);
-                    color:white;
-                    padding:9px;
-                    border-radius:9px;
-                    "
-                >
-            </div>
-
-            <div class="field">
-
-                <label>Auto Save Results</label>
-
-                <select id="autoSave">
-                    <option>Enabled</option>
-                    <option>Disabled</option>
-                </select>
-
-            </div>
-
-            <div class="field">
-
-                <label>Theme</label>
-
-                <select id="themeSelect">
-                    <option value="dark">Dark Command Center</option>
-                    <option value="light">Light Mode</option>
-                </select>
-
-            </div>
-
-        </div>
-
-        <div style="margin-top:17px">
-            <button class="btn primary" onclick="saveSettings()">
-                Save Settings
-            </button>
-        </div>
-
-    </div>
+    <div id="historyList"></div>
 
 </section>
 
 </main>
-
 </div>
 
+<!-- =======================================================
+     PROGRESS OVERLAY
+======================================================= -->
 
-<!-- LOADER -->
+<div
+    class="progress-overlay"
+    id="progressOverlay">
 
-<div class="loader" id="loader">
+    <div class="progress-box">
 
-    <div class="loader-box">
+        <div class="ai-orb"></div>
 
-        <div class="spinner"></div>
+        <div class="progress-title">
+            VisionGuard is thinking...
+        </div>
 
-        <h3 id="loaderTitle">
-            Initializing visual intelligence…
-        </h3>
+        <div
+            class="progress-message"
+            id="progressMessage">
+            AI is putting on its glasses 🤓
+        </div>
 
-        <p id="loaderText">
-            Preparing analysis pipeline
-        </p>
+        <div class="progress-track">
+
+            <div
+                class="progress-fill"
+                id="progressFill">
+            </div>
+
+        </div>
 
     </div>
 
 </div>
 
-
-<!-- TOAST -->
-
-<div class="toast" id="toast">
-    Done
+<div
+    class="toast-container"
+    id="toastContainer">
 </div>
 
-
 <script>
+/* =========================================================
+   STATE
+========================================================= */
+
+let baselineImage = null;
+let currentImage = null;
+let customGif = null;
+
+let compareMode = "overlay";
+
+let analysisData = null;
+
+let soundEnabled = true;
+let audioCtx = null;
+
+const canvas = document.getElementById("compareCanvas");
+const ctx = canvas.getContext("2d");
 
 /* =========================================================
-   VISIONGUARD AI
-   SINGLE FILE VISUAL REGRESSION ENGINE
-   ========================================================= */
+   LOCAL STORAGE
+========================================================= */
 
+let history = JSON.parse(
+    localStorage.getItem("visionguard_history") || "[]"
+);
 
-/* ---------------------------------------------------------
-   STATE
---------------------------------------------------------- */
+/* =========================================================
+   INITIALIZATION
+========================================================= */
 
-const state = {
-    baseline:null,
-    current:null,
-    baselineImage:null,
-    currentImage:null,
-    result:null,
-    compareMode:"overlay",
-    history:JSON.parse(localStorage.getItem("visionguard_history") || "[]"),
-    settings:JSON.parse(localStorage.getItem("visionguard_settings") || "{}")
-};
+updateDashboard();
+renderHistory();
 
+/* =========================================================
+   FILE UPLOAD
+========================================================= */
 
-/* ---------------------------------------------------------
-   NAVIGATION
---------------------------------------------------------- */
+function loadImage(input,type){
 
-document.querySelectorAll(".nav button").forEach(btn=>{
+    const file = input.files[0];
 
-    btn.addEventListener("click",()=>{
+    if(!file) return;
 
-        document.querySelectorAll(".nav button")
-            .forEach(b=>b.classList.remove("active"));
+    if(!file.type.startsWith("image/")){
+        toast("Upload Error","Please select an image file.");
+        return;
+    }
 
-        btn.classList.add("active");
+    const reader = new FileReader();
 
-        const view = btn.dataset.view;
+    reader.onload = e => {
 
-        document.querySelectorAll(".view")
-            .forEach(v=>v.classList.remove("active"));
+        const img = new Image();
 
-        document.getElementById(view).classList.add("active");
+        img.onload = () => {
 
-        const titles = {
-            dashboard:[
-                "Visual Quality Command Center",
-                "AI-driven visual regression monitoring"
-            ],
-            lab:[
-                "Visual Test Laboratory",
-                "Baseline → Candidate → Intelligence"
-            ],
-            reports:[
-                "Regression History",
-                "Every test run stored locally"
-            ],
-            engine:[
-                "AI Detection Engine",
-                "Local browser intelligence"
-            ],
-            settings:[
-                "Project Settings",
-                "Configure your testing environment"
-            ]
-        };
+            if(type === "baseline"){
+                baselineImage = img;
 
-        document.getElementById("pageTitle").textContent=titles[view][0];
-        document.getElementById("pageSubtitle").textContent=titles[view][1];
+                document.getElementById(
+                    "baselinePreview"
+                ).src = e.target.result;
 
-        if(view==="reports") renderReports();
+                document.getElementById(
+                    "baselinePreview"
+                ).style.display = "block";
 
-    });
+                document.getElementById(
+                    "baselineEmpty"
+                ).style.display = "none";
 
-});
-
-
-/* ---------------------------------------------------------
-   FILE INPUT
---------------------------------------------------------- */
-
-const baselineInput =
-    document.getElementById("baselineInput");
-
-const currentInput =
-    document.getElementById("currentInput");
-
-baselineInput.addEventListener("change",e=>{
-    if(e.target.files[0])
-        loadImageFile(e.target.files[0],"baseline");
-});
-
-currentInput.addEventListener("change",e=>{
-    if(e.target.files[0])
-        loadImageFile(e.target.files[0],"current");
-});
-
-
-/* ---------------------------------------------------------
-   DRAG AND DROP
---------------------------------------------------------- */
-
-setupDrop("baselineDrop","baseline");
-setupDrop("currentDrop","current");
-
-function setupDrop(id,type){
-
-    const el=document.getElementById(id);
-
-    ["dragenter","dragover"].forEach(event=>{
-        el.addEventListener(event,e=>{
-            e.preventDefault();
-            el.classList.add("drag");
-        });
-    });
-
-    ["dragleave","drop"].forEach(event=>{
-        el.addEventListener(event,e=>{
-            e.preventDefault();
-            el.classList.remove("drag");
-        });
-    });
-
-    el.addEventListener("drop",e=>{
-
-        const file=e.dataTransfer.files[0];
-
-        if(file && file.type.startsWith("image/"))
-            loadImageFile(file,type);
-
-    });
-
-}
-
-
-function loadImageFile(file,type){
-
-    const reader=new FileReader();
-
-    reader.onload=e=>{
-
-        const img=new Image();
-
-        img.onload=()=>{
-
-            if(type==="baseline"){
-
-                state.baseline=file;
-                state.baselineImage=img;
-
-                document.getElementById("baselineName")
-                    .textContent=
-                    `${file.name} • ${img.width}×${img.height}`;
+                document.getElementById(
+                    "baselineName"
+                ).textContent = file.name;
 
             }else{
 
-                state.current=file;
-                state.currentImage=img;
+                currentImage = img;
 
-                document.getElementById("currentName")
-                    .textContent=
-                    `${file.name} • ${img.width}×${img.height}`;
+                document.getElementById(
+                    "currentPreview"
+                ).src = e.target.result;
+
+                document.getElementById(
+                    "currentPreview"
+                ).style.display = "block";
+
+                document.getElementById(
+                    "currentEmpty"
+                ).style.display = "none";
+
+                document.getElementById(
+                    "currentName"
+                ).textContent = file.name;
 
             }
 
-            checkReady();
+            toast(
+                "Screenshot loaded",
+                type === "baseline"
+                    ? "Baseline evidence ready."
+                    : "Current build evidence ready."
+            );
+
+            if(baselineImage && currentImage){
+                drawComparison();
+            }
 
         };
 
-        img.src=e.target.result;
-
+        img.src = e.target.result;
     };
 
     reader.readAsDataURL(file);
-
 }
 
-
-function checkReady(){
-
-    const ready=
-        state.baselineImage &&
-        state.currentImage;
-
-    document.getElementById("runBtn").disabled=!ready;
-
+function dragOver(e,el){
+    e.preventDefault();
+    el.classList.add("drag");
 }
 
+function dragLeave(el){
+    el.classList.remove("drag");
+}
 
-/* ---------------------------------------------------------
-   RUN ANALYSIS
---------------------------------------------------------- */
+function dropImage(e,type){
 
-async function runAnalysis(){
+    e.preventDefault();
 
-    if(!state.baselineImage || !state.currentImage)
+    e.currentTarget.classList.remove("drag");
+
+    const file = e.dataTransfer.files[0];
+
+    if(!file || !file.type.startsWith("image/")){
+        toast("Invalid file","Please drop an image.");
         return;
+    }
 
-    showLoader(
-        "Analyzing visual build…",
-        "Building perceptual feature maps"
+    const dt = new DataTransfer();
+
+    dt.items.add(file);
+
+    if(type === "baseline"){
+        baselineInput.files = dt.files;
+        loadImage(baselineInput,"baseline");
+    }else{
+        currentInput.files = dt.files;
+        loadImage(currentInput,"current");
+    }
+}
+
+/* =========================================================
+   CUSTOM GIF
+========================================================= */
+
+function loadCustomGif(input){
+
+    const file = input.files[0];
+
+    if(!file) return;
+
+    if(!file.type.startsWith("image/")){
+        toast("GIF Error","Please select an image/GIF.");
+        return;
+    }
+
+    customGif = file;
+
+    const url = URL.createObjectURL(file);
+
+    const img = document.getElementById("customGif");
+
+    img.src = url;
+    img.style.display = "block";
+
+    document.getElementById("gifName").textContent =
+        file.name;
+
+    toast(
+        "Custom reaction installed 🎬",
+        "Your GIF will appear when a result is generated."
+    );
+}
+
+/* =========================================================
+   DRAW COMPARISON
+========================================================= */
+
+function prepareCanvas(){
+
+    if(!baselineImage || !currentImage) return;
+
+    const width = Math.min(
+        Math.max(baselineImage.width,currentImage.width),
+        1600
     );
 
-    await delay(300);
+    const height = Math.min(
+        Math.max(baselineImage.height,currentImage.height),
+        1000
+    );
 
-    try{
+    canvas.width = width;
+    canvas.height = height;
+}
 
-        showLoader(
-            "Comparing structure…",
-            "Analyzing regional visual similarity"
+function drawContain(img){
+
+    const scale = Math.min(
+        canvas.width / img.width,
+        canvas.height / img.height
+    );
+
+    const w = img.width * scale;
+    const h = img.height * scale;
+
+    const x = (canvas.width-w)/2;
+    const y = (canvas.height-h)/2;
+
+    ctx.drawImage(img,x,y,w,h);
+}
+
+function drawComparison(){
+
+    if(!baselineImage || !currentImage) return;
+
+    prepareCanvas();
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    if(compareMode === "baseline"){
+        drawContain(baselineImage);
+    }
+
+    else if(compareMode === "current"){
+        drawContain(currentImage);
+    }
+
+    else if(compareMode === "overlay"){
+
+        drawContain(baselineImage);
+
+        ctx.globalAlpha=.5;
+
+        drawContain(currentImage);
+
+        ctx.globalAlpha=1;
+
+    }
+
+    else if(compareMode === "heatmap"){
+
+        const data = createHeatmap(
+            baselineImage,
+            currentImage
         );
 
-        await delay(300);
+        canvas.width=data.width;
+        canvas.height=data.height;
 
-        const result=analyzeImages(
-            state.baselineImage,
-            state.currentImage
-        );
-
-        state.result=result;
-
-        showLoader(
-            "Detecting layout anomalies…",
-            "Checking geometry, edges and dynamic regions"
-        );
-
-        await delay(350);
-
-        const findings=generateFindings(result);
-
-        result.findings=findings;
-
-        showLoader(
-            "Running text intelligence…",
-            "Preparing OCR-assisted content analysis"
-        );
-
-        await delay(250);
-
-        renderResult(result);
-
-        saveHistory(result);
-
-        hideLoader();
-
-        showToast("Visual regression analysis completed.");
-
-    }catch(error){
-
-        console.error(error);
-
-        hideLoader();
-
-        showToast(
-            "Analysis failed. Try smaller screenshots."
+        ctx.putImageData(
+            data.image,
+            0,
+            0
         );
 
     }
 
+    document.getElementById(
+        "canvasEmpty"
+    ).style.display="none";
 }
 
+function setMode(mode,button){
 
-/* ---------------------------------------------------------
+    compareMode=mode;
+
+    document.querySelectorAll(
+        ".mode-btn"
+    ).forEach(b=>{
+        if(
+            b.parentElement &&
+            b.parentElement.classList.contains(
+                "compare-toolbar"
+            )
+        ){
+            b.classList.remove("active");
+        }
+    });
+
+    button.classList.add("active");
+
+    drawComparison();
+}
+
+/* =========================================================
    IMAGE ANALYSIS
---------------------------------------------------------- */
+========================================================= */
 
-function analyzeImages(base,current){
+function getImageData(img,width,height){
 
-    const W=720;
+    const c=document.createElement("canvas");
 
-    const baseCanvas=document.createElement("canvas");
-    const currCanvas=document.createElement("canvas");
+    c.width=width;
+    c.height=height;
 
-    const ratio=Math.min(
-        W/base.width,
-        W/base.height,
-        1
+    const x=c.getContext("2d");
+
+    x.drawImage(
+        img,
+        0,
+        0,
+        width,
+        height
     );
 
-    const w=Math.max(1,Math.round(base.width*ratio));
-    const h=Math.max(1,Math.round(base.height*ratio));
+    return x.getImageData(
+        0,
+        0,
+        width,
+        height
+    );
+}
 
-    baseCanvas.width=w;
-    baseCanvas.height=h;
+function analyzeImages(){
 
-    currCanvas.width=w;
-    currCanvas.height=h;
+    const width=320;
+    const height=Math.round(
+        width *
+        Math.max(
+            baselineImage.height,
+            currentImage.height
+        ) /
+        Math.max(
+            baselineImage.width,
+            currentImage.width
+        )
+    );
 
-    const bctx=baseCanvas.getContext("2d");
-    const cctx=currCanvas.getContext("2d");
+    const base=getImageData(
+        baselineImage,
+        width,
+        height
+    );
 
-    bctx.drawImage(base,0,0,w,h);
-    cctx.drawImage(current,0,0,w,h);
+    const current=getImageData(
+        currentImage,
+        width,
+        height
+    );
 
-    const b=bctx.getImageData(0,0,w,h);
-    const c=cctx.getImageData(0,0,w,h);
-
-    const pixels=w*h;
-
-    let totalDiff=0;
+    let diff=0;
     let colorDiff=0;
-    let edgeDiff=0;
 
-    const heat=new Uint8ClampedArray(pixels*4);
+    const pixels=base.data.length/4;
 
-    const grayB=new Float32Array(pixels);
-    const grayC=new Float32Array(pixels);
+    const baseGray=new Float32Array(pixels);
+    const curGray=new Float32Array(pixels);
 
-    for(let i=0;i<pixels;i++){
+    for(let i=0,p=0;i<base.data.length;i+=4,p++){
 
-        const p=i*4;
+        const br=base.data[i];
+        const bg=base.data[i+1];
+        const bb=base.data[i+2];
 
-        const br=b.data[p];
-        const bg=b.data[p+1];
-        const bb=b.data[p+2];
+        const cr=current.data[i];
+        const cg=current.data[i+1];
+        const cb=current.data[i+2];
 
-        const cr=c.data[p];
-        const cg=c.data[p+1];
-        const cb=c.data[p+2];
+        diff +=
+            Math.abs(br-cr)+
+            Math.abs(bg-cg)+
+            Math.abs(bb-cb);
 
-        const dr=Math.abs(br-cr);
-        const dg=Math.abs(bg-cg);
-        const db=Math.abs(bb-cb);
+        colorDiff +=
+            Math.sqrt(
+                (br-cr)*(br-cr)+
+                (bg-cg)*(bg-cg)+
+                (bb-cb)*(bb-cb)
+            );
 
-        const d=(dr+dg+db)/3;
-
-        totalDiff+=d;
-
-        colorDiff+=Math.sqrt(
-            dr*dr+
-            dg*dg+
-            db*db
-        )/441.67;
-
-        grayB[i]=
+        baseGray[p]=
             .299*br+
             .587*bg+
             .114*bb;
 
-        grayC[i]=
+        curGray[p]=
             .299*cr+
             .587*cg+
             .114*cb;
-
-        heat[p]=Math.min(255,d*3.2);
-        heat[p+1]=Math.max(0,120-d*1.8);
-        heat[p+2]=Math.max(0,255-d*3);
-        heat[p+3]=
-            d>15
-            ? Math.min(220,70+d*2)
-            : 0;
-
     }
 
+    const meanDiff=
+        diff/(pixels*765);
 
-    /* EDGE COMPARISON */
+    const colorMean=
+        colorDiff/(pixels*441.67);
 
-    let edgeChanges=0;
+    const colorScore=
+        clamp(100-colorMean*100);
 
-    for(let y=1;y<h-1;y++){
+    const pixelScore=
+        clamp(100-meanDiff*100);
 
-        for(let x=1;x<w-1;x++){
+    /* EDGE ANALYSIS */
 
-            const i=y*w+x;
+    let edgeDifference=0;
+    let edgeCount=0;
 
-            const gxB=
-                grayB[i+1]-
-                grayB[i-1];
+    for(
+        let y=1;
+        y<height-1;
+        y++
+    ){
 
-            const gyB=
-                grayB[i+w]-
-                grayB[i-w];
+        for(
+            let x=1;
+            x<width-1;
+            x++
+        ){
 
-            const gxC=
-                grayC[i+1]-
-                grayC[i-1];
+            const p=y*width+x;
 
-            const gyC=
-                grayC[i+w]-
-                grayC[i-w];
+            const be=
+                Math.abs(
+                    baseGray[p]-
+                    baseGray[p-1]
+                )+
+                Math.abs(
+                    baseGray[p]-
+                    baseGray[p-width]
+                );
 
-            const eb=Math.abs(gxB)+Math.abs(gyB);
-            const ec=Math.abs(gxC)+Math.abs(gyC);
+            const ce=
+                Math.abs(
+                    curGray[p]-
+                    curGray[p-1]
+                )+
+                Math.abs(
+                    curGray[p]-
+                    curGray[p-width]
+                );
 
-            if(Math.abs(eb-ec)>35)
-                edgeChanges++;
+            edgeDifference +=
+                Math.min(
+                    Math.abs(be-ce),
+                    255
+                );
 
+            edgeCount++;
         }
-
     }
 
+    const edgeScore=
+        clamp(
+            100-
+            (edgeDifference/
+            edgeCount/
+            255)*100
+        );
 
     /* REGIONAL ANALYSIS */
 
@@ -2072,894 +2472,1510 @@ function analyzeImages(base,current){
     const cols=6;
     const rows=6;
 
-    let structuralSum=0;
-
     for(let ry=0;ry<rows;ry++){
 
         for(let rx=0;rx<cols;rx++){
 
-            const x0=Math.floor(rx*w/cols);
-            const x1=Math.floor((rx+1)*w/cols);
-
-            const y0=Math.floor(ry*h/rows);
-            const y1=Math.floor((ry+1)*h/rows);
-
-            let diff=0;
+            let sum=0;
             let count=0;
 
-            for(let y=y0;y<y1;y+=2){
+            const sx=Math.floor(
+                rx*width/cols
+            );
 
-                for(let x=x0;x<x1;x+=2){
+            const ex=Math.floor(
+                (rx+1)*width/cols
+            );
 
-                    const i=(y*w+x)*4;
+            const sy=Math.floor(
+                ry*height/rows
+            );
 
-                    const d=
-                        (
-                            Math.abs(b.data[i]-c.data[i])+
-                            Math.abs(b.data[i+1]-c.data[i+1])+
-                            Math.abs(b.data[i+2]-c.data[i+2])
-                        )/3;
+            const ey=Math.floor(
+                (ry+1)*height/rows
+            );
 
-                    diff+=d;
+            for(
+                let y=sy;
+                y<ey;
+                y++
+            ){
+
+                for(
+                    let x=sx;
+                    x<ex;
+                    x++
+                ){
+
+                    const p=(y*width+x)*4;
+
+                    sum +=
+                        Math.abs(base.data[p]-
+                        current.data[p])+
+                        Math.abs(base.data[p+1]-
+                        current.data[p+1])+
+                        Math.abs(base.data[p+2]-
+                        current.data[p+2]);
+
                     count++;
-
                 }
-
             }
 
-            const avg=diff/Math.max(1,count);
+            const score=
+                100-
+                (sum/(count*765))*100;
 
             regions.push({
                 x:rx,
                 y:ry,
-                diff:avg
+                score:clamp(score)
             });
-
-            structuralSum+=avg;
-
         }
-
     }
 
+    regions.sort(
+        (a,b)=>a.score-b.score
+    );
 
-    const meanDiff=
-        totalDiff/pixels;
+    const worst=regions.slice(0,5);
 
-    const meanColor=
-        colorDiff/pixels;
+    const regionalScore=
+        regions.reduce(
+            (a,b)=>a+b.score,
+            0
+        )/regions.length;
 
-    const edgeRatio=
-        edgeChanges/
-        Math.max(1,(w-2)*(h-2));
+    /*
+       Heuristic geometry score.
+       Large edge differences generally indicate
+       shifts in cards, grids, buttons, etc.
+    */
 
-
-    let structure=
-        100-
-        Math.min(100,meanDiff*1.7);
-
-    let geometry=
-        100-
-        Math.min(100,edgeRatio*1700);
-
-    let color=
-        100-
-        Math.min(100,meanColor*100);
-
-    const regionalVariance=
-        calculateRegionalVariance(regions);
-
-    geometry=
-        Math.max(
-            0,
-            geometry-
-            regionalVariance*.45
+    const geometryScore=
+        clamp(
+            edgeScore*.58+
+            regionalScore*.42
         );
 
-    const dynamicTolerance=
+    /*
+       Content stability is intentionally tolerant.
+       Large color/pixel differences can be dynamic
+       content rather than layout regressions.
+    */
+
+    const tolerance=
         Number(
-            document.getElementById("tolerance").value
+            document.getElementById(
+                "tolerance"
+            ).value
         );
 
-    const content=
-        Math.max(
-            0,
-            100-
-            Math.min(
-                100,
-                meanDiff*1.2-
-                dynamicTolerance*.55
-            )
+    const contentScore=
+        clamp(
+            pixelScore+
+            tolerance*.55
         );
 
-    let overall=
-        structure*.30+
-        geometry*.25+
-        color*.15+
-        Math.max(0,100-edgeRatio*900)*.15+
-        content*.15;
+    const structuralScore=
+        clamp(
+            geometryScore*.65+
+            edgeScore*.35
+        );
 
-    overall=Math.max(0,Math.min(100,overall));
+    const overall=
+        clamp(
+            structuralScore*.32+
+            geometryScore*.25+
+            colorScore*.15+
+            edgeScore*.13+
+            contentScore*.15
+        );
 
     return {
-        width:w,
-        height:h,
-        heat,
-        regions,
-        structure,
-        geometry,
-        color,
-        edge:Math.max(0,100-edgeRatio*900),
-        content,
+        width,
+        height,
+        pixelScore,
+        colorScore,
+        edgeScore,
+        geometryScore,
+        structuralScore,
+        contentScore,
         overall,
-        meanDiff,
-        originalWidth:base.width,
-        originalHeight:base.height
+        regions:worst
     };
-
 }
 
-
-function calculateRegionalVariance(regions){
-
-    const vals=regions.map(r=>r.diff);
-
-    const mean=
-        vals.reduce((a,b)=>a+b,0)/
-        Math.max(1,vals.length);
-
-    const variance=
-        vals.reduce(
-            (sum,v)=>sum+(v-mean)*(v-mean),
-            0
-        )/
-        Math.max(1,vals.length);
-
-    return Math.sqrt(variance);
-
-}
-
-
-/* ---------------------------------------------------------
+/* =========================================================
    FINDINGS ENGINE
---------------------------------------------------------- */
+========================================================= */
 
-function generateFindings(r){
+function generateFindings(data){
 
     const findings=[];
 
     const threshold=
         Number(
-            document.getElementById("threshold").value
+            document.getElementById(
+                "threshold"
+            ).value
         );
 
-    if(r.overall<threshold){
+    if(data.geometryScore < threshold-8){
 
         findings.push({
+            icon:"📐",
+            title:"Layout / Grid Shift",
+            desc:
+                "Significant structural movement was detected. " +
+                "Cards, columns, spacing or alignment may have changed.",
             severity:
-                r.overall<70
-                ?"critical"
-                :"warning",
-
-            title:"Visual regression detected",
-
-            text:
-                `Overall perceptual similarity is ${r.overall.toFixed(1)}%. `+
-                `The candidate differs materially from the approved baseline.`
+                data.geometryScore<65
+                    ?"critical"
+                    :"warning"
         });
-
-    }else{
-
-        findings.push({
-            severity:"info",
-            title:"No major visual regression",
-            text:
-                `The candidate remains within the configured ${threshold}% similarity threshold.`
-        });
-
     }
 
-
-    if(r.geometry<80){
-
-        findings.push({
-            severity:"critical",
-            title:"Possible layout or grid shift",
-
-            text:
-                "Edge geometry changed significantly. This can indicate moved cards, broken grid columns, changed borders or altered component dimensions."
-        });
-
-    }
-
-
-    if(r.structure<80){
+    if(data.colorScore < threshold-15){
 
         findings.push({
-            severity:"critical",
-            title:"Structural visual change",
-
-            text:
-                "Large regions of the page have changed. Review containers, spacing, responsive layout and component visibility."
+            icon:"🎨",
+            title:"Color / Styling Regression",
+            desc:
+                "The visual color distribution differs from the baseline. " +
+                "Check CSS variables, backgrounds, borders and theme rules.",
+            severity:
+                data.colorScore<55
+                    ?"critical"
+                    :"warning"
         });
-
     }
 
-
-    if(r.color<82){
+    if(data.edgeScore < threshold-10){
 
         findings.push({
-            severity:"warning",
-            title:"Color or styling regression",
-
-            text:
-                "The candidate has a meaningful difference in color distribution. Check backgrounds, themes, gradients, buttons and CSS variables."
+            icon:"🔲",
+            title:"Edge Instability",
+            desc:
+                "Component boundaries and high-contrast edges changed noticeably.",
+            severity:
+                data.edgeScore<55
+                    ?"critical"
+                    :"warning"
         });
-
     }
 
-
-    if(r.edge<78){
+    if(data.contentScore < threshold-20){
 
         findings.push({
-            severity:"warning",
-            title:"Component edge instability",
-
-            text:
-                "Border and edge patterns differ from the baseline. This may indicate missing elements, altered borders or alignment changes."
+            icon:"🔤",
+            title:"Content Visual Difference",
+            desc:
+                "Text or dynamic visual content differs from the baseline.",
+            severity:"info"
         });
-
     }
 
-
-    const strongest=
-        [...r.regions]
-        .sort((a,b)=>b.diff-a.diff)
-        .slice(0,3);
-
-    strongest.forEach(region=>{
-
-        if(region.diff>18){
+    data.regions
+        .filter(r=>r.score<75)
+        .slice(0,3)
+        .forEach((r,i)=>{
 
             findings.push({
-
-                severity:
-                    region.diff>45
-                    ?"critical"
-                    :"warning",
-
+                icon:"🐛",
                 title:
-                    `Regional anomaly · ${regionLabel(region)}`,
-
-                text:
-                    `This page region shows a difference intensity of ${region.diff.toFixed(1)}. Inspect the corresponding component or layout area.`
+                    "Regional Anomaly #" +
+                    (i+1),
+                desc:
+                    "A concentrated visual difference was detected around " +
+                    "grid region " +
+                    (r.x+1) +
+                    "," +
+                    (r.y+1) +
+                    ".",
+                severity:
+                    r.score<50
+                        ?"critical"
+                        :"warning"
             });
 
-        }
+        });
 
-    });
+    if(findings.length===0){
 
+        findings.push({
+            icon:"✨",
+            title:"No Significant Regression",
+            desc:
+                "The current build remains visually consistent with the baseline.",
+            severity:"info"
+        });
 
-    return findings.slice(0,7);
+    }
+
+    return findings;
+}
+
+/* =========================================================
+   RUN ANALYSIS
+========================================================= */
+
+async function runAnalysis(){
+
+    if(!baselineImage || !currentImage){
+
+        toast(
+            "Evidence required",
+            "Upload both baseline and current screenshots first."
+        );
+
+        updateReaction(
+            "🤔",
+            "Where's the evidence bro?",
+            "I need both screenshots before I can start hunting bugs.",
+            "Waiting for baseline + current build"
+        );
+
+        playSound("warning");
+
+        return;
+    }
+
+    showProgress();
+
+    const messages=[
+        "AI is putting on its glasses 🤓",
+        "Sherlock mode activated 🕵️",
+        "Interrogating the pixels 👀",
+        "Asking CSS what happened 💀",
+        "Checking suspicious grid behavior 📐",
+        "Hunting tiny bugs 🐛",
+        "Comparing visual fingerprints 🧬",
+        "Preparing the roast... 😂"
+    ];
+
+    for(let i=0;i<messages.length;i++){
+
+        document.getElementById(
+            "progressMessage"
+        ).textContent=messages[i];
+
+        document.getElementById(
+            "progressFill"
+        ).style.width=
+            ((i+1)/messages.length*100)+"%";
+
+        await wait(230);
+    }
+
+    analysisData=analyzeImages();
+
+    const findings=
+        generateFindings(
+            analysisData
+        );
+
+    analysisData.findings=findings;
+
+    hideProgress();
+
+    renderResults();
+
+    saveHistory();
+
+    updateDashboard();
+
+    renderHistory();
+
+    generateReaction(
+        analysisData,
+        findings
+    );
 
 }
 
+/* =========================================================
+   RESULTS
+========================================================= */
 
-function regionLabel(r){
+function renderResults(){
 
-    const x=["Left","Center","Right"][Math.min(2,Math.floor(r.x/2))];
+    const d=analysisData;
 
-    const y=["Top","Middle","Bottom"][Math.min(2,Math.floor(r.y/2))];
-
-    return `${y}-${x}`;
-
-}
-
-
-/* ---------------------------------------------------------
-   RESULT RENDER
---------------------------------------------------------- */
-
-function renderResult(r){
-
-    document.getElementById("result")
-        .classList.add("show");
-
-    document.getElementById("resultTime")
-        .textContent=
-        new Date().toLocaleTimeString();
-
-    animateMetric(
-        "structure",
-        r.structure
+    const score=Math.round(
+        d.overall
     );
 
-    animateMetric(
-        "geometry",
-        r.geometry
-    );
+    document.getElementById(
+        "scoreNumber"
+    ).textContent=score;
 
-    animateMetric(
-        "color",
-        r.color
-    );
-
-    animateMetric(
-        "edge",
-        r.edge
-    );
-
-    animateMetric(
-        "content",
-        r.content
-    );
-
-
-    document.getElementById("overallScore")
-        .textContent=
-        r.overall.toFixed(0);
-
-    const ring=
-        document.getElementById("scoreRing");
-
-    ring.style.setProperty(
-        "--score",
-        `${r.overall}%`
-    );
+    document.getElementById(
+        "scoreRing"
+    ).style.background=
+        `conic-gradient(
+            #39d9ff ${score*3.6}deg,
+            rgba(255,255,255,.05) ${score*3.6}deg
+        )`;
 
     const threshold=
         Number(
-            document.getElementById("threshold").value
+            document.getElementById(
+                "threshold"
+            ).value
         );
 
-    const decision=
-        document.getElementById("decision");
+    const badge=
+        document.getElementById(
+            "resultBadge"
+        );
 
-    if(r.overall>=threshold){
+    if(score>=threshold){
 
-        decision.textContent="✓ BUILD PASSED";
-        decision.style.color="var(--green)";
+        badge.textContent=
+            "✓ REGRESSION PASSED";
+
+        badge.style.color=
+            "var(--green)";
 
     }else{
 
-        decision.textContent="⚠ REGRESSION FOUND";
-        decision.style.color="var(--red)";
+        badge.textContent=
+            "⚠ REGRESSION DETECTED";
 
+        badge.style.color=
+            "var(--red)";
     }
 
+    setMetric(
+        "structural",
+        d.structuralScore
+    );
+
+    setMetric(
+        "geometry",
+        d.geometryScore
+    );
+
+    setMetric(
+        "color",
+        d.colorScore
+    );
+
+    setMetric(
+        "edge",
+        d.edgeScore
+    );
+
+    setMetric(
+        "content",
+        d.contentScore
+    );
+
+    renderFindings(
+        d.findings
+    );
+
+    drawComparison();
+
+}
+
+/* =========================================================
+   METRICS
+========================================================= */
+
+function setMetric(name,value){
+
+    const v=Math.round(value);
+
+    document.getElementById(
+        name+"Text"
+    ).textContent=v+"%";
+
+    document.getElementById(
+        name+"Bar"
+    ).style.width=v+"%";
+}
+
+/* =========================================================
+   FINDINGS RENDER
+========================================================= */
+
+function renderFindings(findings){
 
     const list=
-        document.getElementById("findingsList");
+        document.getElementById(
+            "findingsList"
+        );
+
+    document.getElementById(
+        "findingCount"
+    ).textContent=
+        findings.length+
+        (
+            findings.length===1
+                ?" issue"
+                :" issues"
+        );
 
     list.innerHTML="";
 
-    r.findings.forEach(f=>{
+    if(
+        findings.length===1 &&
+        findings[0].title===
+        "No Significant Regression"
+    ){
 
-        const div=document.createElement("div");
-
-        div.className="finding";
-
-        div.innerHTML=`
-            <div class="severity ${f.severity}">
-                ${f.severity}
-            </div>
-
-            <div class="finding-content">
-                <strong>${escapeHTML(f.title)}</strong>
-                <p>${escapeHTML(f.text)}</p>
+        list.innerHTML=`
+            <div class="no-findings">
+                ✨ Pixel-level stability looks excellent.
             </div>
         `;
 
-        list.appendChild(div);
-
-    });
-
-
-    drawComparison();
-
-}
-
-
-/* ---------------------------------------------------------
-   METRICS
---------------------------------------------------------- */
-
-function animateMetric(name,value){
-
-    const bar=
-        document.getElementById(name+"Bar");
-
-    const score=
-        document.getElementById(name+"Score");
-
-    setTimeout(()=>{
-        bar.style.width=value+"%";
-    },50);
-
-    score.textContent=
-        value.toFixed(0)+"%";
-
-}
-
-
-/* ---------------------------------------------------------
-   COMPARISON VIEW
---------------------------------------------------------- */
-
-function setCompareMode(mode,button){
-
-    state.compareMode=mode;
-
-    document
-        .querySelectorAll(".compare-toolbar button")
-        .forEach(b=>b.classList.remove("active"));
-
-    button.classList.add("active");
-
-    drawComparison();
-
-}
-
-
-function drawComparison(){
-
-    if(!state.result ||
-       !state.baselineImage ||
-       !state.currentImage)
         return;
-
-    const canvas=
-        document.getElementById("compareCanvas");
-
-    const ctx=canvas.getContext("2d");
-
-    const r=state.result;
-
-    canvas.width=r.width;
-    canvas.height=r.height;
-
-    document.getElementById("emptyCanvas")
-        .style.display="none";
-
-    if(state.compareMode==="baseline"){
-
-        ctx.drawImage(
-            state.baselineImage,
-            0,
-            0,
-            r.width,
-            r.height
-        );
-
-        return;
-
     }
 
+    findings.forEach(
+        (f,index)=>{
 
-    if(state.compareMode==="current"){
+            const div=
+                document.createElement(
+                    "div"
+                );
 
-        ctx.drawImage(
-            state.currentImage,
-            0,
-            0,
-            r.width,
-            r.height
-        );
+            div.className="finding";
 
-        return;
+            div.style.animationDelay=
+                index*.06+"s";
 
-    }
+            div.innerHTML=`
 
+                <div class="finding-icon">
+                    ${f.icon}
+                </div>
 
-    if(state.compareMode==="overlay"){
+                <div class="finding-body">
 
-        ctx.globalAlpha=1;
+                    <div class="finding-title">
+                        ${escapeHtml(f.title)}
+                    </div>
 
-        ctx.drawImage(
-            state.baselineImage,
-            0,
-            0,
-            r.width,
-            r.height
-        );
+                    <div class="finding-desc">
+                        ${escapeHtml(f.desc)}
+                    </div>
 
-        ctx.globalAlpha=.5;
+                </div>
 
-        ctx.drawImage(
-            state.currentImage,
-            0,
-            0,
-            r.width,
-            r.height
-        );
+                <div class="severity sev-${f.severity}">
+                    ${f.severity.toUpperCase()}
+                </div>
 
-        ctx.globalAlpha=1;
+            `;
 
-        return;
-
-    }
-
-
-    if(state.compareMode==="diff"){
-
-        const image=
-            new ImageData(
-                r.heat,
-                r.width,
-                r.height
-            );
-
-        ctx.putImageData(image,0,0);
-
-    }
-
+            list.appendChild(div);
+        }
+    );
 }
 
+/* =========================================================
+   REACTION ENGINE
+========================================================= */
 
-/* ---------------------------------------------------------
-   HISTORY
---------------------------------------------------------- */
+function generateReaction(data,findings){
 
-function saveHistory(result){
+    const score=Math.round(
+        data.overall
+    );
 
     const threshold=
         Number(
-            document.getElementById("threshold").value
+            document.getElementById(
+                "threshold"
+            ).value
         );
 
-    const entry={
+    let reaction;
+
+    if(
+        score>=97
+    ){
+
+        reaction={
+            sticker:"🥳",
+            title:"LET'S GOOOO! PIXEL PERFECTION!",
+            message:
+                "Bro absolutely cooked. I checked the visual structure and couldn't find a meaningful regression.",
+            type:
+                "PERFECT BUILD • SHIP IT"
+        };
+
+        launchConfetti();
+        playSound("success");
+
+    }
+
+    else if(
+        score>=threshold
+    ){
+
+        reaction={
+            sticker:"😎",
+            title:"SHIP IT, SOLDIER 🫡",
+            message:
+                "This build looks clean. There are some tiny differences, but nothing crossed your regression threshold.",
+            type:
+                "PASSED • LOW RISK"
+        };
+
+        launchConfetti();
+        playSound("success");
+
+    }
+
+    else if(
+        score>=85
+    ){
+
+        reaction={
+            sticker:"👀",
+            title:"HMMMM... SOMETHING LOOKS SUS",
+            message:
+                "The build is close, but I spotted visual differences worth investigating before shipping.",
+            type:
+                "WARNING • INVESTIGATION RECOMMENDED"
+        };
+
+        playSound("warning");
+
+    }
+
+    else if(
+        score>=70
+    ){
+
+        reaction={
+            sticker:"🐛",
+            title:"BRO... I FOUND A SNEAKY BUG",
+            message:
+                "Something moved or changed enough to make the visual fingerprint suspicious.",
+            type:
+                "REGRESSION • BUG DETECTED"
+        };
+
+        playSound("bug");
+
+    }
+
+    else{
+
+        reaction={
+            sticker:"💀",
+            title:"CSS HAS LEFT THE CHAT",
+            message:
+                "Okay... this build needs attention. The current screenshot is substantially different from the approved baseline.",
+            type:
+                "CRITICAL REGRESSION"
+        };
+
+        document.body.classList.remove("critical");
+
+        void document.body.offsetWidth;
+
+        document.body.classList.add("critical");
+
+        playSound("critical");
+    }
+
+    /*
+       Override based on most obvious finding.
+    */
+
+    if(
+        findings.some(
+            f=>f.title.includes("Layout")
+        ) &&
+        score<threshold
+    ){
+
+        reaction.sticker="🤨";
+        reaction.title=
+            "BRO... WHO MOVED THE GRID? 💀";
+
+        reaction.message=
+            "The visual engine detected a layout or alignment shift. Someone touched the CSS.";
+        
+        reaction.type=
+            "LAYOUT REGRESSION";
+    }
+
+    else if(
+        findings.some(
+            f=>f.title.includes("Color")
+        ) &&
+        score<threshold
+    ){
+
+        reaction.sticker="🤡";
+        reaction.title=
+            "WHO CHANGED THE COLORS?";
+
+        reaction.message=
+            "The structure may be okay, but the styling fingerprint changed significantly.";
+
+        reaction.type=
+            "COLOR / STYLE REGRESSION";
+    }
+
+    else if(
+        findings.some(
+            f=>f.title.includes("Edge")
+        ) &&
+        score<threshold
+    ){
+
+        reaction.sticker="🧐";
+        reaction.title=
+            "THE EDGES ARE ACTING WEIRD";
+
+        reaction.message=
+            "Component boundaries and high-contrast regions don't match the baseline.";
+
+        reaction.type=
+            "EDGE INSTABILITY";
+    }
+
+    updateReaction(
+        reaction.sticker,
+        reaction.title,
+        reaction.message,
+        reaction.type
+    );
+
+    if(customGif){
+
+        const sticker=
+            document.getElementById(
+                "sticker"
+            );
+
+        sticker.innerHTML="";
+
+        const img=
+            document.createElement("img");
+
+        img.src=
+            URL.createObjectURL(
+                customGif
+            );
+
+        img.style.width="100%";
+        img.style.height="100%";
+        img.style.objectFit="contain";
+        img.style.borderRadius="30px";
+
+        sticker.appendChild(img);
+    }
+}
+
+function updateReaction(
+    emoji,
+    title,
+    message,
+    type
+){
+
+    const sticker=
+        document.getElementById(
+            "sticker"
+        );
+
+    /*
+       Reset custom GIF.
+    */
+
+    if(
+        !customGif ||
+        title.includes("Upload")
+    ){
+        sticker.textContent=emoji;
+    }
+
+    document.getElementById(
+        "reactionTitle"
+    ).textContent=title;
+
+    document.getElementById(
+        "reactionMessage"
+    ).textContent=message;
+
+    document.getElementById(
+        "reactionType"
+    ).textContent=type;
+
+    sticker.classList.remove(
+        "bounce",
+        "shake"
+    );
+
+    void sticker.offsetWidth;
+
+    if(
+        title.includes("CSS") ||
+        title.includes("GRID")
+    ){
+
+        sticker.classList.add(
+            "shake"
+        );
+
+    }else{
+
+        sticker.classList.add(
+            "bounce"
+        );
+    }
+}
+
+/* =========================================================
+   CONFETTI
+========================================================= */
+
+function launchConfetti(){
+
+    for(
+        let i=0;
+        i<65;
+        i++
+    ){
+
+        const el=
+            document.createElement(
+                "div"
+            );
+
+        el.className="confetti";
+
+        el.style.left=
+            Math.random()*100+"vw";
+
+        el.style.setProperty(
+            "--x",
+            (Math.random()*500-250)+"px"
+        );
+
+        el.style.animationDuration=
+            (2+Math.random()*3)+"s";
+
+        el.style.animationDelay=
+            Math.random()*.5+"s";
+
+        el.style.background=
+            [
+                "#39d9ff",
+                "#667cff",
+                "#b875ff",
+                "#4ade80",
+                "#facc15",
+                "#ff5268"
+            ][
+                Math.floor(
+                    Math.random()*6
+                )
+            ];
+
+        document.body.appendChild(el);
+
+        setTimeout(
+            ()=>el.remove(),
+            5500
+        );
+    }
+}
+
+/* =========================================================
+   HEATMAP
+========================================================= */
+
+function createHeatmap(imgA,imgB){
+
+    const width=420;
+
+    const height=Math.round(
+        width*
+        Math.max(
+            imgA.height,
+            imgB.height
+        )/
+        Math.max(
+            imgA.width,
+            imgB.width
+        )
+    );
+
+    const a=getImageData(
+        imgA,
+        width,
+        height
+    );
+
+    const b=getImageData(
+        imgB,
+        width,
+        height
+    );
+
+    const result=
+        new ImageData(
+            width,
+            height
+        );
+
+    for(
+        let i=0;
+        i<a.data.length;
+        i+=4
+    ){
+
+        const d=
+            (
+                Math.abs(a.data[i]-b.data[i])+
+                Math.abs(a.data[i+1]-b.data[i+1])+
+                Math.abs(a.data[i+2]-b.data[i+2])
+            )/3;
+
+        result.data[i]=
+            Math.min(255,d*2.5);
+
+        result.data[i+1]=
+            Math.max(0,180-d*2);
+
+        result.data[i+2]=
+            30;
+
+        result.data[i+3]=255;
+    }
+
+    return {
+        width,
+        height,
+        image:result
+    };
+}
+
+/* =========================================================
+   SOUND ENGINE
+========================================================= */
+
+function getAudio(){
+
+    if(!audioCtx){
+
+        audioCtx=
+            new (
+                window.AudioContext ||
+                window.webkitAudioContext
+            )();
+
+    }
+
+    return audioCtx;
+}
+
+function beep(
+    frequency,
+    duration,
+    startTime,
+    type="sine",
+    gainAmount=.08
+){
+
+    if(!soundEnabled) return;
+
+    const ac=getAudio();
+
+    const osc=
+        ac.createOscillator();
+
+    const gain=
+        ac.createGain();
+
+    osc.type=type;
+
+    osc.frequency.value=
+        frequency;
+
+    gain.gain.setValueAtTime(
+        0,
+        startTime
+    );
+
+    gain.gain.linearRampToValueAtTime(
+        gainAmount*
+        (Number(volume.value)/100),
+        startTime+.015
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        .001,
+        startTime+duration
+    );
+
+    osc.connect(gain);
+    gain.connect(ac.destination);
+
+    osc.start(startTime);
+    osc.stop(startTime+duration);
+}
+
+function playSound(kind){
+
+    if(!soundEnabled) return;
+
+    const ac=getAudio();
+
+    if(ac.state==="suspended"){
+        ac.resume();
+    }
+
+    const t=ac.currentTime;
+
+    if(kind==="success"){
+
+        beep(523,.14,t,"sine",.1);
+        beep(659,.14,t+.12,"sine",.1);
+        beep(784,.22,t+.24,"sine",.12);
+        beep(1046,.3,t+.4,"sine",.08);
+
+    }
+
+    else if(kind==="warning"){
+
+        beep(420,.18,t,"triangle",.09);
+        beep(340,.24,t+.2,"triangle",.07);
+
+    }
+
+    else if(kind==="bug"){
+
+        beep(220,.1,t,"square",.07);
+        beep(330,.1,t+.12,"square",.07);
+        beep(180,.25,t+.25,"sawtooth",.06);
+
+    }
+
+    else if(kind==="critical"){
+
+        beep(160,.18,t,"sawtooth",.1);
+        beep(120,.18,t+.2,"sawtooth",.1);
+        beep(90,.35,t+.4,"square",.08);
+
+    }
+}
+
+function testSound(){
+
+    playSound("success");
+
+    toast(
+        "Sound test 🔊",
+        "Reaction audio is working."
+    );
+}
+
+function toggleSound(){
+
+    soundEnabled=!soundEnabled;
+
+    const toggle=
+        document.getElementById(
+            "soundToggle"
+        );
+
+    toggle.classList.toggle(
+        "on",
+        soundEnabled
+    );
+
+    if(soundEnabled){
+
+        playSound("success");
+
+        toast(
+            "Sound enabled 🔊",
+            "AI reactions can now play sound effects."
+        );
+
+    }else{
+
+        toast(
+            "Sound muted 🔇",
+            "The reaction engine will stay silent."
+        );
+    }
+}
+
+/* =========================================================
+   HISTORY
+========================================================= */
+
+function saveHistory(){
+
+    const score=
+        Math.round(
+            analysisData.overall
+        );
+
+    const threshold=
+        Number(
+            document.getElementById(
+                "threshold"
+            ).value
+        );
+
+    history.unshift({
 
         id:
-            "VG-"+Date.now().toString().slice(-6),
+            Date.now(),
 
-        project:
-            document.getElementById("projectName").value ||
-            "VisionGuard Demo",
+        date:
+            new Date().toLocaleString(),
 
-        baseline:
-            state.baseline?.name || "baseline",
-
-        current:
-            state.current?.name || "current",
-
-        viewport:
-            document.getElementById("viewport").value,
-
-        score:
-            Number(result.overall.toFixed(1)),
+        score,
 
         status:
-            result.overall>=threshold
-            ?"PASS"
-            :"FAIL",
+            score>=threshold
+                ?"PASSED"
+                :"REGRESSION",
 
-        timestamp:
-            new Date().toISOString()
+        issues:
+            analysisData.findings.filter(
+                f=>
+                    f.title!==
+                    "No Significant Regression"
+            ).length,
 
-    };
+        viewport:
+            document.getElementById(
+                "viewport"
+            ).value
 
-    state.history.unshift(entry);
+    });
 
-    state.history=
-        state.history.slice(0,100);
+    history=
+        history.slice(
+            0,
+            20
+        );
 
     localStorage.setItem(
         "visionguard_history",
-        JSON.stringify(state.history)
+        JSON.stringify(history)
     );
-
-    updateStats();
-
 }
 
-
-function renderReports(){
+function renderHistory(){
 
     const list=
-        document.getElementById("reportsList");
+        document.getElementById(
+            "historyList"
+        );
 
-    if(!state.history.length){
+    list.innerHTML="";
+
+    if(history.length===0){
 
         list.innerHTML=`
             <div style="
-                padding:35px;
+                padding:25px;
                 text-align:center;
-                color:var(--muted);
-                font-size:11px;
-            ">
-                No regression tests yet.
+                color:#56627d;
+                font-size:10px">
+                No tests yet.
             </div>
         `;
 
         return;
-
     }
 
+    history.forEach(
+        h=>{
 
-    list.innerHTML=
-        state.history.map(item=>`
+            const row=
+                document.createElement(
+                    "div"
+                );
 
-            <div class="report-row">
+            row.className=
+                "history-row";
+
+            row.innerHTML=`
 
                 <div>
-                    <strong>${escapeHTML(item.project)}</strong>
-                    <div style="
-                        color:#626d82;
-                        font-size:9px;
-                        margin-top:3px;
-                    ">
-                        ${item.id}
-                    </div>
-                </div>
-
-                <div>${item.viewport}</div>
-
-                <div>${item.score}%</div>
-
-                <div class="${item.status==="PASS"
-                    ?"status-pass"
-                    :"status-fail"}">
-                    ${item.status}
+                    ${escapeHtml(
+                        h.date
+                    )}
                 </div>
 
                 <div>
-                    ${new Date(item.timestamp)
-                        .toLocaleDateString()}
+                    ${h.score}%
                 </div>
 
-            </div>
+                <div style="
+                    color:${
+                        h.status==="PASSED"
+                        ?"var(--green)"
+                        :"var(--red)"
+                    }">
+                    ${h.status}
+                </div>
 
-        `).join("");
+                <div>
+                    ${h.issues}
+                </div>
 
-}
+            `;
 
-
-function updateStats(){
-
-    const total=state.history.length;
-
-    const passed=
-        state.history.filter(
-            x=>x.status==="PASS"
-        ).length;
-
-    const failed=total-passed;
-
-    const avg=
-        total
-        ? state.history.reduce(
-            (sum,x)=>sum+x.score,
-            0
-        )/total
-        : 0;
-
-    document.getElementById("statTests")
-        .textContent=total;
-
-    document.getElementById("statPassed")
-        .textContent=passed;
-
-    document.getElementById("statFailed")
-        .textContent=failed;
-
-    document.getElementById("statSimilarity")
-        .textContent=
-        total
-        ? avg.toFixed(1)+"%"
-        :"—";
-
-}
-
-
-function exportReports(){
-
-    const blob=new Blob(
-        [
-            JSON.stringify(
-                {
-                    product:"VisionGuard AI",
-                    generatedAt:new Date().toISOString(),
-                    tests:state.history
-                },
-                null,
-                2
-            )
-        ],
-        {
-            type:"application/json"
+            list.appendChild(row);
         }
     );
+}
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function updateDashboard(){
+
+    const total=
+        history.length;
+
+    const passed=
+        history.filter(
+            h=>h.status==="PASSED"
+        ).length;
+
+    const regressions=
+        history.filter(
+            h=>h.status==="REGRESSION"
+        ).length;
+
+    const average=
+        total
+            ?Math.round(
+                history.reduce(
+                    (a,b)=>a+b.score,
+                    0
+                )/total
+            )
+            :null;
+
+    document.getElementById(
+        "totalTests"
+    ).textContent=total;
+
+    document.getElementById(
+        "passedTests"
+    ).textContent=passed;
+
+    document.getElementById(
+        "regressionTests"
+    ).textContent=regressions;
+
+    document.getElementById(
+        "avgScore"
+    ).textContent=
+        average===null
+            ?"—"
+            :average+"%";
+}
+
+/* =========================================================
+   EXPORT REPORT
+========================================================= */
+
+function exportReport(){
+
+    const report={
+
+        product:
+            "VisionGuard AI",
+
+        generatedAt:
+            new Date().toISOString(),
+
+        settings:{
+            viewport:
+                document.getElementById(
+                    "viewport"
+                ).value,
+
+            tolerance:
+                document.getElementById(
+                    "tolerance"
+                ).value,
+
+            threshold:
+                document.getElementById(
+                    "threshold"
+                ).value,
+
+            algorithm:
+                document.getElementById(
+                    "algorithm"
+                ).value
+        },
+
+        latestAnalysis:
+            analysisData,
+
+        history
+
+    };
+
+    const blob=
+        new Blob(
+            [
+                JSON.stringify(
+                    report,
+                    null,
+                    2
+                )
+            ],
+            {
+                type:"application/json"
+            }
+        );
 
     const url=
         URL.createObjectURL(blob);
 
-    const a=document.createElement("a");
+    const a=
+        document.createElement("a");
 
     a.href=url;
 
     a.download=
-        "visionguard-regression-report.json";
+        "visionguard-report.json";
 
     a.click();
 
     URL.revokeObjectURL(url);
 
-    showToast("Regression report exported.");
-
-}
-
-
-/* ---------------------------------------------------------
-   SETTINGS
---------------------------------------------------------- */
-
-function saveSettings(){
-
-    state.settings={
-        project:
-            document.getElementById("projectName").value,
-
-        autoSave:
-            document.getElementById("autoSave").value,
-
-        theme:
-            document.getElementById("themeSelect").value
-    };
-
-    localStorage.setItem(
-        "visionguard_settings",
-        JSON.stringify(state.settings)
+    toast(
+        "Report exported 📄",
+        "JSON report generated successfully."
     );
-
-    showToast("Settings saved.");
-
 }
 
+/* =========================================================
+   DEMO GENERATOR
+========================================================= */
 
-function loadSettings(){
+function generateDemo(){
 
-    if(!state.settings)
-        return;
+    const width=1000;
+    const height=620;
 
-    if(state.settings.project)
-        document.getElementById("projectName")
-            .value=state.settings.project;
+    const baseCanvas=
+        document.createElement("canvas");
 
-    if(state.settings.autoSave)
-        document.getElementById("autoSave")
-            .value=state.settings.autoSave;
+    baseCanvas.width=width;
+    baseCanvas.height=height;
 
-    if(state.settings.theme)
-        document.getElementById("themeSelect")
-            .value=state.settings.theme;
+    const a=
+        baseCanvas.getContext("2d");
 
-}
+    a.fillStyle="#0b1220";
+    a.fillRect(0,0,width,height);
 
+    a.fillStyle="#171f35";
+    a.fillRect(30,30,940,70);
 
-/* ---------------------------------------------------------
-   NEW TEST
---------------------------------------------------------- */
+    a.fillStyle="#667cff";
+    a.fillRect(55,55,170,20);
 
-function openRun(){
+    for(let i=0;i<6;i++){
 
-    document.querySelector(
-        '[data-view="lab"]'
-    ).click();
+        a.fillStyle=
+            i%2
+                ?"#151d31"
+                :"#18233b";
 
-    window.scrollTo({
-        top:0,
-        behavior:"smooth"
-    });
-
-}
-
-
-/* ---------------------------------------------------------
-   RESET
---------------------------------------------------------- */
-
-function clearAll(){
-
-    state.baseline=null;
-    state.current=null;
-    state.baselineImage=null;
-    state.currentImage=null;
-    state.result=null;
-
-    baselineInput.value="";
-    currentInput.value="";
-
-    document.getElementById("baselineName")
-        .textContent="No file selected";
-
-    document.getElementById("currentName")
-        .textContent="No file selected";
-
-    document.getElementById("result")
-        .classList.remove("show");
-
-    document.getElementById("runBtn")
-        .disabled=true;
-
-    const canvas=
-        document.getElementById("compareCanvas");
-
-    canvas
-        .getContext("2d")
-        .clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
+        a.fillRect(
+            50+(i%3)*300,
+            140+Math.floor(i/3)*190,
+            270,
+            150
         );
 
-    document.getElementById("emptyCanvas")
-        .style.display="block";
+        a.fillStyle="#303d5e";
 
-    showToast("Current test cleared.");
+        a.fillRect(
+            70+(i%3)*300,
+            165+Math.floor(i/3)*190,
+            150,
+            15
+        );
 
-}
+        a.fillRect(
+            70+(i%3)*300,
+            200+Math.floor(i/3)*190,
+            210,
+            10
+        );
+    }
 
+    const currentCanvas=
+        document.createElement("canvas");
 
-/* ---------------------------------------------------------
-   LOADER
---------------------------------------------------------- */
+    currentCanvas.width=width;
+    currentCanvas.height=height;
 
-function showLoader(title,text){
+    const b=
+        currentCanvas.getContext("2d");
 
-    document.getElementById("loaderTitle")
-        .textContent=title;
-
-    document.getElementById("loaderText")
-        .textContent=text;
-
-    document.getElementById("loader")
-        .classList.add("show");
-
-}
-
-
-function hideLoader(){
-
-    document.getElementById("loader")
-        .classList.remove("show");
-
-}
-
-
-/* ---------------------------------------------------------
-   TOAST
---------------------------------------------------------- */
-
-function showToast(message){
-
-    const toast=
-        document.getElementById("toast");
-
-    toast.textContent=message;
-
-    toast.classList.add("show");
-
-    setTimeout(()=>{
-        toast.classList.remove("show");
-    },2800);
-
-}
-
-
-/* ---------------------------------------------------------
-   UTILITIES
---------------------------------------------------------- */
-
-function delay(ms){
-
-    return new Promise(
-        resolve=>setTimeout(resolve,ms)
+    b.drawImage(
+        baseCanvas,
+        0,
+        0
     );
 
+    /*
+       Introduce intentional bugs:
+       - moved card
+       - changed color
+       - missing region
+    */
+
+    b.fillStyle="#0b1220";
+
+    b.fillRect(
+        350,
+        140,
+        270,
+        150
+    );
+
+    b.fillStyle="#ff5268";
+
+    b.fillRect(
+        370,
+        165,
+        180,
+        15
+    );
+
+    b.fillStyle="#202b46";
+
+    b.fillRect(
+        370,
+        200,
+        220,
+        10
+    );
+
+    b.fillStyle="#18233b";
+
+    b.fillRect(
+        350,
+        330,
+        270,
+        150
+    );
+
+    const baseData=
+        baseCanvas.toDataURL();
+
+    const curData=
+        currentCanvas.toDataURL();
+
+    baselineImage=
+        imageFromData(baseData);
+
+    currentImage=
+        imageFromData(curData);
+
+    document.getElementById(
+        "baselinePreview"
+    ).src=baseData;
+
+    document.getElementById(
+        "baselinePreview"
+    ).style.display="block";
+
+    document.getElementById(
+        "baselineEmpty"
+    ).style.display="none";
+
+    document.getElementById(
+        "baselineName"
+    ).textContent=
+        "demo-baseline.png";
+
+    document.getElementById(
+        "currentPreview"
+    ).src=curData;
+
+    document.getElementById(
+        "currentPreview"
+    ).style.display="block";
+
+    document.getElementById(
+        "currentEmpty"
+    ).style.display="none";
+
+    document.getElementById(
+        "currentName"
+    ).textContent=
+        "demo-current.png";
+
+    toast(
+        "Demo loaded ⚡",
+        "Intentional visual regressions have been inserted."
+    );
+
+    setTimeout(
+        runAnalysis,
+        400
+    );
 }
 
+function imageFromData(data){
 
-function escapeHTML(str){
+    const img=
+        new Image();
+
+    img.src=data;
+
+    return img;
+}
+
+/* =========================================================
+   UTILS
+========================================================= */
+
+function clamp(n,min=0,max=100){
+
+    return Math.max(
+        min,
+        Math.min(
+            max,
+            n
+        )
+    );
+}
+
+function wait(ms){
+
+    return new Promise(
+        resolve=>
+            setTimeout(
+                resolve,
+                ms
+            )
+    );
+}
+
+function escapeHtml(str){
 
     return String(str)
         .replaceAll("&","&amp;")
@@ -2967,307 +3983,101 @@ function escapeHTML(str){
         .replaceAll(">","&gt;")
         .replaceAll('"',"&quot;")
         .replaceAll("'","&#039;");
-
 }
 
+function toast(title,message){
 
-/* ---------------------------------------------------------
-   OCR OPTIONAL ANALYSIS
---------------------------------------------------------- */
+    const container=
+        document.getElementById(
+            "toastContainer"
+        );
 
-/*
-    This function is intentionally optional.
+    const div=
+        document.createElement(
+            "div"
+        );
 
-    Tesseract.js runs fully inside the browser.
-    It does NOT require an API key.
+    div.className="toast";
 
-    Call inspectText() if you want OCR analysis.
-*/
+    div.innerHTML=`
 
-async function inspectText(image){
+        <div class="toast-title">
+            ${escapeHtml(title)}
+        </div>
 
-    if(!window.Tesseract)
-        return null;
+        <div class="toast-msg">
+            ${escapeHtml(message)}
+        </div>
 
-    try{
+    `;
 
-        const result=
-            await Tesseract.recognize(
-                image,
-                "eng",
-                {
-                    logger:m=>{
-                        if(m.status==="recognizing text"){
-                            document.getElementById("loaderText")
-                                .textContent=
-                                `OCR ${(m.progress*100).toFixed(0)}%`;
-                        }
-                    }
-                }
+    container.appendChild(div);
+
+    setTimeout(
+        ()=>{
+            div.style.opacity="0";
+            div.style.transform=
+                "translateX(30px)";
+
+            setTimeout(
+                ()=>div.remove(),
+                300
             );
 
-        return result.data;
-
-    }catch(e){
-
-        console.warn("OCR unavailable:",e);
-
-        return null;
-
-    }
-
+        },
+        3200
+    );
 }
 
+/* =========================================================
+   PROGRESS
+========================================================= */
 
-/* ---------------------------------------------------------
-   AUTO OCR TRIGGER
---------------------------------------------------------- */
+function showProgress(){
 
-async function runOCRIfUseful(){
+    document.getElementById(
+        "progressOverlay"
+    ).classList.add("show");
 
-    if(!state.currentImage)
-        return null;
-
-    /*
-      OCR is deliberately optional because large screenshots
-      can consume considerable browser resources.
-    */
-
-    return null;
-
+    document.getElementById(
+        "progressFill"
+    ).style.width="0%";
 }
 
+function hideProgress(){
 
-/* ---------------------------------------------------------
+    document.getElementById(
+        "progressOverlay"
+    ).classList.remove("show");
+}
+
+/* =========================================================
    KEYBOARD SHORTCUT
---------------------------------------------------------- */
+========================================================= */
 
-document.addEventListener("keydown",e=>{
-
-    if((e.ctrlKey || e.metaKey) && e.key==="Enter"){
+document.addEventListener(
+    "keydown",
+    e=>{
 
         if(
-            state.baselineImage &&
-            state.currentImage
+            e.ctrlKey &&
+            e.key.toLowerCase()==="enter"
         ){
+
+            e.preventDefault();
+
             runAnalysis();
         }
 
     }
-
-});
-
-
-/* ---------------------------------------------------------
-   INITIALIZE
---------------------------------------------------------- */
-
-loadSettings();
-
-updateStats();
-
-renderReports();
-
-
-/* ---------------------------------------------------------
-   DEMO MODE
---------------------------------------------------------- */
-
-function createDemoImages(){
-
-    const w=1000;
-    const h=650;
-
-    function create(variant){
-
-        const c=document.createElement("canvas");
-
-        c.width=w;
-        c.height=h;
-
-        const ctx=c.getContext("2d");
-
-        ctx.fillStyle="#0b1020";
-        ctx.fillRect(0,0,w,h);
-
-        ctx.fillStyle="#151c30";
-        ctx.fillRect(30,30,w-60,90);
-
-        ctx.fillStyle="#ffffff";
-        ctx.font="bold 28px Arial";
-        ctx.fillText(
-            "Dashboard",
-            60,
-            83
-        );
-
-        ctx.fillStyle="#5e9cff";
-
-        ctx.beginPath();
-        ctx.roundRect(
-            770,
-            55,
-            160,
-            42,
-            10
-        );
-        ctx.fill();
-
-        ctx.fillStyle="#ffffff";
-        ctx.font="14px Arial";
-        ctx.fillText(
-            "Launch Test",
-            812,
-            81
-        );
-
-
-        const cards=[
-            [30,145,290,160],
-            [355,145,290,160],
-            [680,145,290,160],
-            [30,330,450,260],
-            [505,330,465,260]
-        ];
-
-        cards.forEach((card,i)=>{
-
-            let [x,y,cw,ch]=card;
-
-            if(
-                variant &&
-                i===2
-            ){
-                x=650;
-                cw=320;
-            }
-
-            ctx.fillStyle="#151c30";
-
-            ctx.beginPath();
-
-            ctx.roundRect(
-                x,
-                y,
-                cw,
-                ch,
-                14
-            );
-
-            ctx.fill();
-
-            ctx.fillStyle="#6f7a92";
-            ctx.font="13px Arial";
-
-            ctx.fillText(
-                "Analytics Component",
-                x+20,
-                y+32
-            );
-
-            ctx.fillStyle="#ffffff";
-            ctx.font="bold 27px Arial";
-
-            ctx.fillText(
-                i===2 && variant
-                ?"73%"
-                :"84%",
-                x+20,
-                y+78
-            );
-
-            ctx.fillStyle="#34415f";
-
-            ctx.fillRect(
-                x+20,
-                y+103,
-                Math.max(
-                    70,
-                    cw-40
-                ),
-                9
-            );
-
-        });
-
-
-        return c.toDataURL();
-
-    }
-
-
-    return {
-        baseline:create(false),
-        current:create(true)
-    };
-
-}
-
-
-/* Expose demo generator */
-
-window.generateDemo=()=>{
-
-    const demo=createDemoImages();
-
-    const b=new Image();
-
-    b.onload=()=>{
-
-        state.baselineImage=b;
-
-        document.getElementById("baselineName")
-            .textContent=
-            "Demo Baseline • 1000×650";
-
-        checkReady();
-
-    };
-
-    b.src=demo.baseline;
-
-
-    const c=new Image();
-
-    c.onload=()=>{
-
-        state.currentImage=c;
-
-        document.getElementById("currentName")
-            .textContent=
-            "Demo Current Build • 1000×650";
-
-        checkReady();
-
-    };
-
-    c.src=demo.current;
-
-    openRun();
-
-};
-
-
-/* ---------------------------------------------------------
-   CONSOLE BRANDING
---------------------------------------------------------- */
-
-console.log(
-`
-╔══════════════════════════════════════════════╗
-║             VISIONGUARD AI                   ║
-║      Visual Regression Intelligence          ║
-╠══════════════════════════════════════════════╣
-║ Perceptual Analysis      ✓                  ║
-║ Regional Analysis        ✓                  ║
-║ Edge Analysis            ✓                  ║
-║ Color Analysis           ✓                  ║
-║ Dynamic Tolerance        ✓                  ║
-║ OCR Layer                ✓                  ║
-║ Local Persistence        ✓                  ║
-╚══════════════════════════════════════════════╝
-`
 );
+
+/* =========================================================
+   OPTIONAL GLOBAL DEMO FUNCTION
+========================================================= */
+
+window.generateDemo=
+    generateDemo;
 
 </script>
 
